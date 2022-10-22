@@ -9,14 +9,15 @@ namespace L02_PSSC.Domain
 {
     public record ClientMail
     {
-        //private static readonly Regex ValidPattrern = new("^\\S+@\\S+\\.\\S+$");
+        private static readonly Regex ValidPattern = new("^\\S+@\\S+\\.\\S+$");
         //private static readonly Regex ValidPattrern = new("^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$") 
 
         public string Value { get; }
 
         public ClientMail(string value)
         {
-            if(IsValidEmail(value))
+            
+            if(IsValid(value))
             {
                 Value = value;
             }
@@ -25,11 +26,16 @@ namespace L02_PSSC.Domain
                 throw new Exception($"{value} is invalid");
             }
         }
-        public bool IsValidEmail(string email)
+
+        public static bool IsValid(string stringValue) => ValidPattern.IsMatch(stringValue);
+
+        public static bool IsValidEmail(string emailString, out ClientMail clientMail)
         {
+            bool isValid = false;
+            clientMail = null;
             try
             {
-                var mail = new System.Net.Mail.MailAddress(email);
+                var mail = new System.Net.Mail.MailAddress(emailString);
                 return true;
             }
             catch
@@ -37,6 +43,7 @@ namespace L02_PSSC.Domain
                 return false;
             }
         }
+
         public override string ToString()
         {
             return Value;

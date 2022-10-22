@@ -7,6 +7,6 @@ using static L02_PSSC.Domain.Quantity;
 
 namespace L02_PSSC.Domain
 {
-    public record ValidatedClientCart(Guid idCart, ProductCode productCode, IQuantity quantity);
-    
+    public record UnvalidatedClientCart(Guid cartId, string productCode, string quantity);
+
 }

@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace L02_PSSC.Domain
 {
-    public record Client(ClientMail id, Address address);
+    public record Client(ClientMail clientMail, Address address);
     
 }
