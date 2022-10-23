@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace L02_PSSC.Domain
 {
-    public record ValidatedCart(ClientID Client, List<Product> Products);
+    public record Client(ClientMail clientMail, Address address);
     
 }

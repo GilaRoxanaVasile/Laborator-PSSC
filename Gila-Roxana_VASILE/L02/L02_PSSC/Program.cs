@@ -1,7 +1,9 @@
 ﻿using L02_PSSC.Domain;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using static L02_PSSC.Domain.Cart;
+using static L02_PSSC.Domain.Quantity;
 
 namespace L02_PSSC
 {
@@ -10,63 +12,57 @@ namespace L02_PSSC
         private static readonly Random random = new Random();
         static void Main(string[] args)
         {
-            var clientID = ReadValue("Client ID: ");
-            var client = new ClientID(clientID);
-            var ClientList = new List<Client>();
-            var listOfProducts = ReadListOfProducts().ToArray();
-            Cart.UnvalidatedCart unvalidatedProduct = new(listOfProducts);
-            ICart result = ValidateCart(unvalidatedProduct);
-            // ClientID client = ClientID(Console.ReadLine());
-            //var clientID = ReadValue("Client ID: ");
+            var clientMail = new ClientMail(ReadValue("Client Mail: "));
+
+            Address clientAddress = new Address(ReadValue("Address: "));
+
+            var client= new Client(clientMail, clientAddress);
+
+            var listOfProducts = ReadListOfProducts(client).ToArray();
+
+            Guid cartID = Guid.NewGuid();
+
+            EmptyCart emptyCart = new(cartID);
+            ICart result = ValidateCart(emptyCart, client);
             result.Match(
                 whenEmptyCart: emptyResult => emptyResult,
-                whenUnvalidatedCart: unvalidatedCart => unvalidatedProduct,
+                whenInvalidatedCart: invalidatedCart => invalidatedCart,
                 whenValidatedCart: validatedResult => PayCart(validatedResult),
-                whenPayedCart: payedCart => payedCart //ClientList.Add(new(client, listOfProducts))//payedCart //?
+                whenPayedCart: payedCart => payedCart 
                 );
         }
-
-        private static void ClientHistory(ClientID clientID,Product[] prod)
+ 
+        private static List<UnvalidatedClientCart> ReadListOfProducts(Client client)
         {
-            //adaauga in istoric comenzi clientul si cosul
-        }
-
-        private static List<Product> ReadListOfProducts()
-        {
-            List<Product> listOfProduct = new();
+            List<UnvalidatedClientCart> listOfProduct = new();
+            
             do
             {
-                var productCode = ReadValue("Product Code: ");
-                if (string.IsNullOrEmpty(productCode))
+                ProductCode productCode = new ProductCode(ReadValue("Product Code: "));
+                
+                int tipCantitate = Convert.ToInt32(ReadValue("Tip cantitate(0-kg, 1-unitate): "));
+                double cantitate = Convert.ToDouble(ReadValue("Cantitate: "));
+                IQuantity qty;
+                if (tipCantitate == 0)
                 {
-                    break;
+                    qty = new QKg(cantitate);
                 }
+                else { qty = new QUnit(cantitate); }
 
-                var quantity = ReadValue("Quantity: ");
-                if (string.IsNullOrEmpty(quantity))
-                {
-                    break;
-                }
-
-                var address = ReadValue("Address: ");
-                if (string.IsNullOrEmpty(address))
-                {
-                    break;
-                }
-
-                listOfProduct.Add(new Product(quantity, productCode, address));
+               var product = new Product(productCode, qty);
+               listOfProduct.Add(new (productCode, qty));
             } while (true);
             return listOfProduct;
         }
 
-        private static ICart ValidateCart(Cart.UnvalidatedCart unvalidatedCart) =>
+        private static ICart ValidateCart(Cart.EmptyCart emptyCart, Client client) =>
             random.Next(100) > 50 ? 
             throw new Exception("Random error") 
-            : new Cart.ValidatedCart(new List<Product>());
+            : new Cart.ValidatedCart(emptyCart.IdCart, client, new List <ValidatedClientCart> ());
 
 
         private static ICart PayCart(Cart.ValidatedCart validatedCart) =>
-            new PayedCart(new List<Product>());
+            new PayedCart(validatedCart.IdCart, validatedCart.client, new List<ValidatedClientCart>(), DateTime.Now);
 
         private static string? ReadValue(string prompt)
         {
