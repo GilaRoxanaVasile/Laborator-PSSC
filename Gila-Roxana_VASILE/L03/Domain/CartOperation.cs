@@ -18,6 +18,18 @@ namespace Domain
             List<ValidatedClientCart> validatedClientCart = new();
             bool isValidList = true;
             string invalidReason = string.Empty;
+            bool isValidClient = true;
+            string invalidReasonClient = string.Empty;
+            if (!ClientMail.IsValid(client.clientMail.ToString()))
+            {
+                invalidReason = $"Invalid e-mail ({client.clientMail})";
+                isValidClient = false;
+            }
+            if (!Address.IsValid(client.address.ToString()))
+            {
+                invalidReason = $"Invalid address ({client.address})";
+                isValidClient = false;
+            }
             foreach (var unvalidatedCartItem in cart.ProductList)
             {
                 if (!ProductCode.TryParseProductCode(unvalidatedCartItem.productCode, unvalidatedCartItem.productPrice, out ProductCode code)
@@ -39,7 +51,7 @@ namespace Domain
                 validatedClientCart.Add(validCart);
             }
 
-            if (isValidList)
+            if (isValidList && isValidClient)
             {
                 return new ValidatedCart(validatedClientCart);
             }

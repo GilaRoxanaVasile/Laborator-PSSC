@@ -67,7 +67,7 @@ namespace L02_PSSC
             } while (true);
             return listOfProduct;
         }
-        
+
         private static string? ReadValue(string prompt)
         {
             Console.WriteLine(prompt);
