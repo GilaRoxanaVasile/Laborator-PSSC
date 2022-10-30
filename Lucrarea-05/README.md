@@ -1,6 +1,6 @@
-# Lucrarea 4: Interacțiunea cu baza de date
+# Lucrarea 5: Interacțiunea cu baza de date
 
-**Context**: căruciorul de cumpărături pentru un magazin virtual. 
+**Context**: Coșul de cumpărături pentru un magazin virtual. 
 
 **Obiective**: citirea/scrierea din/în baza de date
 
