@@ -1,6 +1,6 @@
-# Lucrarea 3: Implementarea unui „workflow” DDD 
+# Lucrarea 4: Implementarea unui „workflow” DDD 
 
-**Context**: căruciorul de cumpărături pentru un magazin virtual. 
+**Context**: Coșul de cumpărături pentru un magazin virtual. 
 
 **Obiective**: reprezentarea valorilor opționale, tratarea erorilor
 

@@ -1,6 +1,6 @@
-# Lucrarea 2: Implementarea unui „workflow” DDD 
+# Lucrarea 3: Implementarea unui „workflow” DDD 
 
-**Context**: căruciorul de cumpărături pentru un magazin virtual. 
+**Context**: coșul de cumpărături pentru un magazin virtual. 
 
 **Obiective**: descompunerea comportamentului specific unui domeniu în operațiuni (funcții) și combinarea lor pentru a obține un workflow
 
@@ -12,12 +12,12 @@ Analizați și rulați soluția din directorul exemple. Identificați elementele
 
 Implementați workflow-ul pentru plasarea unei comenzi și realizați o aplicații consolă care să apeleze workflow-ul creat. 
 Workflow-ul trebuie să conțină următoarele operații:
-* validarea datelor de intrare si conversia la tipurile de date corecte
+* validarea datelor de intrare si conversia la tipurile de date specifice modelului DDD
 * verificarea existenței produsului pe baza codului de produs
 * verificarea stocului
 * verificarea adresei de livrare
 * calcularea prețului
-Workflow-ul se va finaliza cu generarea unui eveniment.
+* Workflow-ul se va finaliza cu generarea unui eveniment care va indica fie faptul că formularul de comanda este valid și comanda a fost preluată cu succes fie faptul că formularul de comanda este invalid și comanda nu a fost respinsă.
 
 **Referințe**
 
