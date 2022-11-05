@@ -19,7 +19,7 @@ namespace Exemple
     {
         private static readonly Random random = new Random();
 
-        private static string ConnectionString = "Server=LAPTOP-5O6G7HEC\\DEVELOPER;Database=PSSC-sample;Trusted_Connection=True;MultipleActiveResultSets=true";
+        private static string ConnectionString = "Server=DESKTOP-MCMV9M2;Database=studenti;Trusted_Connection=True;MultipleActiveResultSets=true";
 
         static async Task Main(string[] args)
         {
