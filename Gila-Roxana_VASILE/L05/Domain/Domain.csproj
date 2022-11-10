@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="CSharp.Choices" Version="2.1.1" />
     <PackageReference Include="LanguageExt.Core" Version="4.2.9" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
   </ItemGroup>
 
 </Project>

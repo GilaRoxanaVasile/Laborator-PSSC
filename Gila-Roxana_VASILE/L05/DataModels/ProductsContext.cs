@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DData.Models;
+using DataModels.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace DData
+namespace DataModels
 {
     public class ProductsContext: DbContext
     {

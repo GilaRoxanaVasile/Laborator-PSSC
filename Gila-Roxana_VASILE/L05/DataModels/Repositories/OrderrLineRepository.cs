@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static L02_PSSC.Domain.Quantity;
 
-namespace DData.Repositories
+namespace DataModels.Repositories
 {
     public class OrderrLineRepository : IOrderLineRepository
     {

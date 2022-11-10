@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DData.Repositories
+namespace DataModels.Repositories
 {
     public class OrderHeadRepository : IOrderHeaderRepository
     {
