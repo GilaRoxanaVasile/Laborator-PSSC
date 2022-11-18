@@ -1,6 +1,6 @@
 # Lucrarea 6: Comunicare între contexte folosind evenimente
 
-**Context**: căruciorul de cumpărături pentru un magazin virtual. 
+**Context**: Coșul de cumpărături pentru un magazin virtual. 
 
 **Obiective**: trimiterea de evenimente dupa terminarea procesării către contextul facturării și cel al livrării
 

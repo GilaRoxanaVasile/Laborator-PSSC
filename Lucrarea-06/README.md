@@ -1,6 +1,6 @@
 # Lucrarea 5: Folosirea unui model DDD pentru a implementa un API Web
 
-**Context**: căruciorul de cumpărături pentru un magazin virtual. 
+**Context**: Coșul de cumpărături pentru un magazin virtual. 
 
 **Obiective**: implementarea unui API Web folosind un model DDD
 
