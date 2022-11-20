@@ -72,7 +72,7 @@ namespace ProiectPSSC.Domain
                 validatedClientOrder.quantity, validatedClientOrder.price, new ProductPrice(validatedClientOrder.price.Price * validatedClientOrder.quantity.Value));
 
 
-        private static IOrderProducts MergeProducts(IOrderProducts products, IEnumerable<CalculatedOrderTotalPayment> existingProducts) =>
+        public static IOrderProducts MergeProducts(IOrderProducts products, IEnumerable<CalculatedOrderTotalPayment> existingProducts) =>
             products.Match(
             whenUnvalidatedOrderProducts: unvalidatedClientOrder => unvalidatedClientOrder,
             whenInvalidOrderProducts: invalidatedClientOrder => invalidatedClientOrder,
@@ -91,7 +91,7 @@ namespace ProiectPSSC.Domain
             return new CalculatedOrderProducts(allProducts);
         }
 
-        public static IOrderProducts PlaceORder(IOrderProducts products) => products.Match(
+        public static IOrderProducts PlaceOrder(IOrderProducts products) => products.Match(
             whenUnvalidatedOrderProducts: unvalidatedClientOrder => unvalidatedClientOrder,
             whenInvalidOrderProducts: invalidatedClientOrder => invalidatedClientOrder,
             whenPlacedOrderProducts: placedOrder => placedOrder,
