@@ -1,4 +1,4 @@
-
+ 
 CREATE TABLE [dbo].[Product](
 	[ProductId] [int] IDENTITY(1,1) NOT NULL,
 	[Code] [varchar](7) NOT NULL,
@@ -63,7 +63,7 @@ GO
 
 CREATE TABLE [dbo].[Bill](
 	[BillId] [int] IDENTITY(1,1) NOT NULL,
-	[BillingId] [int] NOT NULL,
+	[BillingId] [int] NOT NULL, // LEAGA CU CLIENT ID - STERGE BILLING
 	[OrderId] [int] NOT NULL,
 	[BillingAddress] [varchar](30) NOT NULL,
  CONSTRAINT [PK_Bill] PRIMARY KEY CLUSTERED 

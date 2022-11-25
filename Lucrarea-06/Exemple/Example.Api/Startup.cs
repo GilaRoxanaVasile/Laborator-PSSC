@@ -32,7 +32,7 @@ namespace Example.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<GradesContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(Configuration.GetConnectionString("SQL1")));
 
             services.AddTransient<IGradesRepository, GradesRepository>();
             services.AddTransient<IStudentsRepository, StudentsRepository>();
