@@ -14,7 +14,7 @@ using ProiectPSSC.Domain.Models;
 namespace ProiectPSSC.Api.Controllers
 {
     [ApiController]
-    [Route("[controller")]
+    [Route("[controller]")]
     public class ClientProductController:ControllerBase
     {
         private ILogger<ClientProductController> logger;

@@ -13,9 +13,21 @@ namespace ProiectPSSC.Data.Repositories
 {
     public class OrderLineRepository : IOrderLineRepository
     {
+        private readonly OrderContext _orderContext;
+        public OrderLineRepository(OrderContext orderContext)
+        {
+            _orderContext = orderContext;
+        }
         public TryAsync<List<int>> TryGetExistingOrders(IEnumerable<int> orders)
         {
             throw new NotImplementedException();
         }
+            /*=> async () =>
+        {
+            var orders = await _orderContext.OrderLines
+                    .Where(x => x)
+                    .AsNoTracking()
+                    .ToListAsync();
+        };*/
     }
 }
