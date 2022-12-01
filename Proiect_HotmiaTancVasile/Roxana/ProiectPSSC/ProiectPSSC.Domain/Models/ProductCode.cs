@@ -12,11 +12,45 @@ namespace ProiectPSSC.Domain.Models
     public record ProductCode
     {
         public const string Pattern = "^XYZ[0-9]{4}$";
-        private static readonly Regex PatternRegex = new(Pattern);
+        private static readonly Regex ValidPattern = new(Pattern);
 
+        public string Value { get; }
+
+        public ProductCode(string value)
+        {
+
+            if (IsValid(value))
+            {
+                Value = value;
+            }
+            else
+            {
+                throw new Exception($"{value} is invalid");
+            }
+        }
+
+        public static bool IsValid(string stringValue) => ValidPattern.IsMatch(stringValue);
+
+        public override string ToString()
+        {
+            return Value;
+        }
+
+        public static Option<ProductCode> TryParseProductCode(string stringValue)
+        {
+            if (IsValid(stringValue))
+            {
+                return Some<ProductCode>(new(stringValue));
+            }
+            else
+            {
+                return None;
+            }
+        }
+        /*
         public decimal Code { get; }
 
-        public ProductCode(decimal code)
+        public ProductCode(string code)
         {
             if (IsValid(code))
             {
@@ -61,5 +95,6 @@ namespace ProiectPSSC.Domain.Models
         {
             return $"{Code:0.##}";
         }
+        */
     }
 }

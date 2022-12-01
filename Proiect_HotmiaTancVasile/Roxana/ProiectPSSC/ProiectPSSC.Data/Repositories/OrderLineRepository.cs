@@ -18,16 +18,28 @@ namespace ProiectPSSC.Data.Repositories
         {
             _orderContext = orderContext;
         }
-        public TryAsync<List<int>> TryGetExistingOrders(IEnumerable<int> orders)
+
+        public TryAsync<List<ClientProduct>> TryGetExistingClientProducts(IEnumerable<string> productCode, IEnumerable<int> quantity) => async () =>
+        {
+            var clientProducts = await _orderContext.OrderLines
+                                .Where(clientProd => productCode.Contains(clientProd.ProductCode))
+                                .AsNoTracking()
+                                .ToListAsync();
+            return clientProducts.Select(clientProd =>
+                        new ClientProduct
+                        (new ProductCode(clientProd.ProductCode), 
+                        new Quantity(clientProd.Quantity)))
+                                    .ToList();
+        };
+
+        public TryAsync<List<CalculatedProductPrice>> TryGetExistingOrderProducts()
         {
             throw new NotImplementedException();
         }
-            /*=> async () =>
+
+        public TryAsync<Unit> TrySaveProducts(OrderProducts.PlacedOrderProducts order)
         {
-            var orders = await _orderContext.OrderLines
-                    .Where(x => x)
-                    .AsNoTracking()
-                    .ToListAsync();
-        };*/
+            throw new NotImplementedException();
+        }
     }
 }

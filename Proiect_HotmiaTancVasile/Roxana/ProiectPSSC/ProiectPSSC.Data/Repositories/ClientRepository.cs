@@ -13,9 +13,20 @@ namespace ProiectPSSC.Data.Repositories
 {
     public class ClientRepository : IClientRepository
     {
-        public TryAsync<List<ClientEmail>> TryGetExistingClients(IEnumerable<string> clientsToCheck)
+        private readonly OrderContext _orderContext;
+        public ClientRepository(OrderContext orderContext)
         {
-            throw new NotImplementedException();
+            _orderContext = orderContext;
         }
+
+        public TryAsync<List<ClientEmail>> TryGetExistingClients(IEnumerable<string> clientsToCheck) => async() =>
+        {
+            var clients = await _orderContext.Clients
+                                .Where(client => clientsToCheck.Contains(client.Email))
+                                .AsNoTracking()
+                                .ToListAsync();
+            return clients.Select(client => new ClientEmail(client.Email))
+                            .ToList();
+        };
     }
 }

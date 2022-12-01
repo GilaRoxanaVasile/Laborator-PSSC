@@ -12,7 +12,7 @@ namespace ProiectPSSC.Domain.Models
     public record Quantity
     {
         public int Value { get; }
-        internal Quantity(int value)
+        public Quantity(int value)
         {
             if(IsValid(value))
             {

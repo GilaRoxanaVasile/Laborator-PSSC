@@ -39,14 +39,15 @@ namespace ProiectPSSC.Domain
 
             var result = from products in productRepository.TryGetExistingProducts(unvalidatedOrder.ProductList.Select(product => product.ProductCode))
                                                           .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product") as IOrderProducts)
-                        // let checkProductExists = (Func<ProductCode, Option<ProductCode>>)(product => CheckProducttExists(products, product)
-                    from existingClients in clientRepository.TryGetExistingClients(unvalidatedOrder.ProductList.Select(client => client.ClientEmail))
+                         let checkProductExists = (Func<ProductCode, Option<ProductCode>>)(product => CheckProducttExists(products, product))
+                         from allOrderProducts in orderLineRepository.TryGetExistingOrderProducts()
+                                                 .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la produs") as IOrderProducts)
+                         from existingClients in clientRepository.TryGetExistingClients(unvalidatedOrder.ProductList.Select(client => client.ClientEmail))
                                                             .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la client") as IOrderProducts)
                          let checkClientExists = (Func<ClientEmail, Option<ClientEmail>>)(client => CheckClientExists(existingClients, client))
-                    from clients in orderHeaderRepository.TryGetExistingClientOrders()
+                         from clients in orderHeaderRepository.TryGetExistingClientOrders()
                                     .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la client") as IOrderProducts)
-                         //let checkClientExists = (Func<ClientEmail, Option<ClientEmail>>)(client => CheckClientExists(clients, client)
-                         from placedOrder in ExecuteWorkflowAsync(unvalidatedOrder, clients, checkClientExists).ToAsync()
+                         from placedOrder in ExecuteWorkflowAsync(unvalidatedOrder, allOrderProducts, clients, checkClientExists, checkProductExists).ToAsync()
                          from _ in orderHeaderRepository.TrySaveOrders(placedOrder)
                                  .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product") as IOrderProducts)
                          select placedOrder;
@@ -55,8 +56,31 @@ namespace ProiectPSSC.Domain
                 Right: placedOrder => new OrderPlacedSuccededEvent(placedOrder.Csv, placedOrder.PublishedDate)
                 );
 
-         }           
+         }
+        private async Task<Either<IOrderProducts, PlacedOrderProducts>> ExecuteWorkflowAsync
+        (UnvalidatedOrderProducts unvalidatedOrder,IEnumerable<CalculatedProductPrice> existingProducts, IEnumerable<CalculatedOrderTotalPayment> existingOrders,
+            Func<ClientEmail, Option<ClientEmail>> checkClientExists, Func <ProductCode, Option<ProductCode>> checkProductExists)
+        {
+            IOrderProducts products = await ValidateProduct(checkProductExists, unvalidatedOrder);
+            IOrderProducts order = await ValidateOrder(checkClientExists, unvalidatedOrder);
+            products = CalculateFinalOrdersPrices(products);
+            //orders = CalculateFinalPrices(orders);
+            products = MergeProducts(products, existingProducts);
+            order = PlaceOrder(new ClientEmail(checkClientExists.ToString()), products); //aoleu
 
+            return order.Match<Either<IOrderProducts, PlacedOrderProducts>>(
+                whenUnvalidatedOrderProducts: unvalidatedClientOrder => Left(unvalidatedClientOrder as IOrderProducts),
+                whenInvalidOrderProducts: invalidatedClientOrder => Left(invalidatedClientOrder as IOrderProducts),
+                whenValidatedOrderProducts: validatedOrder => Left(validatedOrder as IOrderProducts),
+                whenCalculatedOrderProducts: calculatedOrderProducts => Left(calculatedOrderProducts as IOrderProducts),
+                whenPlacedOrderProducts: placedOrder => Right(placedOrder)
+                    );
+
+
+        }
+
+
+        /*
         private async Task<Either<IOrderProducts, PlacedOrderProducts>> ExecuteWorkflowAsync
             (UnvalidatedOrderProducts unvalidatedOrder, IEnumerable<CalculatedOrderTotalPayment> existingOrders, Func<ClientEmail, Option<ClientEmail>> checkClientExists)
         {
@@ -75,6 +99,8 @@ namespace ProiectPSSC.Domain
 
 
         }
+        */
+
 
         private Option<ClientEmail> CheckClientExists(IEnumerable<ClientEmail> clients, ClientEmail client)
         {

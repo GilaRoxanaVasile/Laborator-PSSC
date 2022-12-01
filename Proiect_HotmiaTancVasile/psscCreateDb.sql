@@ -40,8 +40,9 @@ GO
 CREATE TABLE [dbo].[OrderLine](
 	[OrderLineId] [int] IDENTITY(1,1) NOT NULL,
 	[OrderId] [int] NOT NULL,
-	[ProductId] [int] NOT NULL,
-	[Quantity] [decimal] NULL,
+	[ProductId] [int] NOT NULL, // schimb cu product code sau il adaug si pe asta
+	[Code] [varchar](7) NOT NULL,
+	[Quantity] [int] NULL,
  CONSTRAINT [PK_OrderLine] PRIMARY KEY CLUSTERED 
 (
 	[OrderLineId] ASC

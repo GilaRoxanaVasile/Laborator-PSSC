@@ -42,12 +42,33 @@ namespace ProiectPSSC.Domain.Models
 
         public record CalculatedOrderProducts:IOrderProducts
         {
-            internal CalculatedOrderProducts(IReadOnlyCollection<CalculatedOrderTotalPayment> productList)
+            internal CalculatedOrderProducts(IReadOnlyCollection<CalculatedProductPrice> productList)
             {
                 ProductList = productList;
             }
-            public IReadOnlyCollection<CalculatedOrderTotalPayment> ProductList { get; }
+            public IReadOnlyCollection<CalculatedProductPrice> ProductList { get; }
         }
+
+
+        public record PlacedOrderProducts : IOrderProducts
+        {
+            internal PlacedOrderProducts(ClientEmail client, IReadOnlyCollection<CalculatedProductPrice> productList, ProductPrice totalPrice, string csv, DateTime publishedDate)
+            {
+                Client = client;
+                ProductList = productList;
+                Price = totalPrice;
+                PublishedDate = publishedDate;
+                Csv = csv;
+            }
+            public ClientEmail Client { get; }
+            public IReadOnlyCollection<CalculatedProductPrice> ProductList { get; }
+            public ProductPrice Price { get; }
+            public DateTime PublishedDate { get; }
+            public string Csv { get; }
+        }
+
+        /*
+
         public record PlacedOrderProducts:IOrderProducts
         {
             internal PlacedOrderProducts(IReadOnlyCollection<CalculatedOrderTotalPayment> productList, string csv, DateTime publishedDate)
@@ -60,6 +81,7 @@ namespace ProiectPSSC.Domain.Models
             public DateTime PublishedDate { get; }
             public string Csv { get; }
         }
+        */
     }
 
 

@@ -13,9 +13,33 @@ namespace ProiectPSSC.Data.Repositories
 {
     public class ProductRepository : IProductRepository
     {
-        public TryAsync<List<ProductCode>> TryGetExistingProducts(IEnumerable<string> productsToCheck)
+        private readonly OrderContext orderContext;
+
+        public ProductRepository(OrderContext orderContext)
         {
-            throw new NotImplementedException();
+            this.orderContext = orderContext;
         }
+
+        public TryAsync<List<ProductCode>> TryGetExistingProducts(IEnumerable<string> productsToCheck) => async () =>
+        {
+            var products = await orderContext.Products
+                            .Where(product => productsToCheck.Contains(product.Code))
+                            .AsNoTracking()
+                            .ToListAsync();
+            return products.Select(product => new ProductCode(product.Code))
+                        .ToList();
+        };
+
+        public TryAsync<List<Products>> TryGetProductCatalog(IEnumerable<string> productCode) => async () =>
+        {
+            var catalog = await orderContext.Products
+                            .Where(product => productCode.Contains(product.Code))
+                            .AsNoTracking()
+                            .ToListAsync();
+            return catalog.Select(
+                product =>  new Products(new ProductCode(product.Code),
+                new Quantity(product.Stoc), new ProductPrice(product.Price)))
+                    .ToList();
+        };
     }
 }

@@ -11,5 +11,6 @@ namespace ProiectPSSC.Domain.Repositories
     public interface IProductRepository
     {
         TryAsync<List<ProductCode>> TryGetExistingProducts(IEnumerable<string> productsToCheck);
+        TryAsync<List<Products>> TryGetProductCatalog(IEnumerable<string> productCode);
     }
 }

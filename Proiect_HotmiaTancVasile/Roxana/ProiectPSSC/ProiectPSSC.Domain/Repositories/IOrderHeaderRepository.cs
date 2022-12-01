@@ -11,7 +11,7 @@ namespace ProiectPSSC.Domain.Repositories
 {
     public interface IOrderHeaderRepository
     {
-        TryAsync<List<CalculatedOrderTotalPayment>> TryGetExistingClientOrders();
+        TryAsync<List<CalculatedOrderTotalPrice>> TryGetExistingClientOrders();
         TryAsync<Unit> TrySaveOrders(PlacedOrderProducts order);
     }
 }

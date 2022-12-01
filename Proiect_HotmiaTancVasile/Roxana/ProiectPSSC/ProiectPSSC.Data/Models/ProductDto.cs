@@ -11,6 +11,6 @@ namespace ProiectPSSC.Data.Models
         public int ProductId { get; set; }
         public string Code { get; set; }
         public int Stoc { get; set; }
-        public decimal Pret { get; set; }
+        public decimal Price { get; set; }
     }
 }
