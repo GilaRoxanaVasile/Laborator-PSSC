@@ -58,7 +58,7 @@ namespace ProiectPSSC.Domain
 
          }
         private async Task<Either<IOrderProducts, PlacedOrderProducts>> ExecuteWorkflowAsync
-        (UnvalidatedOrderProducts unvalidatedOrder,IEnumerable<CalculatedProductPrice> existingProducts, IEnumerable<CalculatedOrderTotalPayment> existingOrders,
+        (UnvalidatedOrderProducts unvalidatedOrder,IEnumerable<CalculatedProductPrice> existingProducts, IEnumerable<CalculatedOrderTotalPrice> existingOrders,
             Func<ClientEmail, Option<ClientEmail>> checkClientExists, Func <ProductCode, Option<ProductCode>> checkProductExists)
         {
             IOrderProducts products = await ValidateProduct(checkProductExists, unvalidatedOrder);
