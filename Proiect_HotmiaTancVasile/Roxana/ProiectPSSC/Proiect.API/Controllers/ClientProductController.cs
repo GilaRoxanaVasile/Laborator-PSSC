@@ -29,12 +29,12 @@ namespace ProiectPSSC.Api.Controllers
                     Succ: GetAllProductsHandleSucces,
                     Fail: GetAllProductsHandleError
                     );
-        private OkObjectResult GetAllProductsHandleSucces(List<ProiectPSSC.Domain.Models.CalculatedOrderTotalPayment> order) =>
+        private OkObjectResult GetAllProductsHandleSucces(List<ProiectPSSC.Domain.Models.CalculatedOrderTotalPrice> order) =>
             Ok(order.Select(product => new
             {
                 ClientEmail = product.clientEmail.Value,
                 product.totalPrice,
-                product.product
+                
 
             }));
         private ObjectResult GetAllProductsHandleError(Exception ex)
