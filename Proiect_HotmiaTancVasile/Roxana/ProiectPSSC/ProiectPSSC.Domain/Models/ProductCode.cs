@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using LanguageExt;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static LanguageExt.Prelude;
 
 namespace ProiectPSSC.Domain.Models
@@ -25,7 +26,7 @@ namespace ProiectPSSC.Domain.Models
             }
             else
             {
-                throw new Exception($"{value} is invalid");
+                throw new InvalidProductCodeException($"{value} is invalid");
             }
         }
 

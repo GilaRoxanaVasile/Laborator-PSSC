@@ -35,7 +35,7 @@ namespace ProiectPSSC.Domain
             from clientEmail in ClientEmail.TryParseClientEmail(unvalidatedClientOrder.ClientEmail)
                                 .ToEitherAsync($"Invalid client email ({unvalidatedClientOrder.ClientEmail})")
             from price in ProductPrice.TryParsePrice(unvalidatedClientOrder.productPrice)
-                            .ToEitherAsync($"Invalid product code ({unvalidatedClientOrder.ClientEmail}, {unvalidatedClientOrder.ProductCode})")
+                            .ToEitherAsync($"Invalid product price ({unvalidatedClientOrder.ClientEmail}, {unvalidatedClientOrder.ProductCode})")
             from clientExists in checkClientExists(clientEmail)
                                  .ToEitherAsync($"Client {clientEmail.Value} does not exist.")
             select new ValidatedClientOrder(clientEmail, orderProductCode, quantity, price);

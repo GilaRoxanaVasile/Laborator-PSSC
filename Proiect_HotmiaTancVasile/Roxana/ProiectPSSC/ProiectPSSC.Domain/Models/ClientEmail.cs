@@ -26,7 +26,7 @@ namespace ProiectPSSC.Domain.Models
             }
             else
             {
-                throw new Exception($"{value} is invalid");
+                throw new InvalidClientEmailException($"{value} is invalid");
             }
         }
 
