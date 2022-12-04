@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ProiectPSSC.Domain.Models
 {
-    public record ValidatedClientOrder(ClientEmail clientEmail, ProductCode productCode, Quantity quantity, ProductPrice price);
+    public record ValidatedClientOrder(ClientEmail clientEmail, ProductCode productCode, Quantity quantity);
+    //public record ValidatedClientOrder(ClientEmail clientEmail, ProductCode productCode, Quantity quantity, ProductPrice price);
 
 }

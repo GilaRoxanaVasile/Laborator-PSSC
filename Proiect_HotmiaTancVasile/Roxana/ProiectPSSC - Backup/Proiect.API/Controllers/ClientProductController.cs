@@ -35,13 +35,13 @@ namespace ProiectPSSC.Api.Controllers
                 ClientEmail = product.clientEmail.Value,
                 product.totalPrice,
                 
+
             }));
         private ObjectResult GetAllProductsHandleError(Exception ex)
         {
             logger.LogError(ex, ex.Message);
             return base.StatusCode(StatusCodes.Status500InternalServerError, "UnexpectedError");
         }
-
         [HttpPost]
         public async Task<IActionResult> PlaceOrder([FromServices] PlaceOrderWorkflow placeOrderWorkflow, [FromBody] InputClientProduct[] inputClientProducts)
         {
@@ -60,7 +60,8 @@ namespace ProiectPSSC.Api.Controllers
             new UnvalidatedClientOrder(
                 ClientEmail: inputClientProduct.CMail,
                 ProductCode: inputClientProduct.PCode,
-                Quantity: inputClientProduct.Qunatity
+                Quantity: inputClientProduct.Qunatity,
+                productPrice: inputClientProduct.Qunatity //help aici
                 );
     }
 }

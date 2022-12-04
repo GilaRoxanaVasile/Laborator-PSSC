@@ -77,10 +77,12 @@ namespace ProiectPSSC.Domain
         (UnvalidatedOrderProducts unvalidatedOrder,IEnumerable<CalculatedProductPrice> existingProducts, IEnumerable<CalculatedOrderTotalPrice> existingOrders, IEnumerable<Products> productCatalog,
             Func<ClientEmail, Option<ClientEmail>> checkClientExists, Func<Quantity, Option<Quantity>> checkStocAvailable, Func <ProductCode, Option<ProductCode>> checkProductExists)
         {
+           // IOrderProducts products = await ValidateProduct(checkProductExists, unvalidatedOrder);
             IOrderProducts order = await ValidateOrder2(checkClientExists, checkProductExists, checkStocAvailable, unvalidatedOrder);
-            order = CalculateFinalPrices(order, productCatalog);
+            order = CalculateFinalOrdersPrices(order);
+            //orders = CalculateFinalPrices(orders);
             order = MergeProducts(order, existingProducts);
-            order = PlaceOrder(order); 
+            order = PlaceOrder(new ClientEmail(checkClientExists.ToString()), order); //aoleu
 
             return order.Match<Either<IOrderProducts, PlacedOrderProducts>>(
                 whenUnvalidatedOrderProducts: unvalidatedClientOrder => Left(unvalidatedClientOrder as IOrderProducts),
@@ -89,7 +91,33 @@ namespace ProiectPSSC.Domain
                 whenCalculatedOrderProducts: calculatedOrderProducts => Left(calculatedOrderProducts as IOrderProducts),
                 whenPlacedOrderProducts: placedOrder => Right(placedOrder)
                     );
+
+
         }
+
+
+        /*
+        private async Task<Either<IOrderProducts, PlacedOrderProducts>> ExecuteWorkflowAsync
+            (UnvalidatedOrderProducts unvalidatedOrder, IEnumerable<CalculatedOrderTotalPayment> existingOrders, Func<ClientEmail, Option<ClientEmail>> checkClientExists)
+        {
+            IOrderProducts orders = await ValidateOrder(checkClientExists, unvalidatedOrder);
+            orders = CalculateFinalPrices(orders);
+            orders = MergeProducts(orders, existingOrders);
+            orders = PlaceOrder(orders);
+
+            return orders.Match<Either<IOrderProducts, PlacedOrderProducts>>(
+                whenUnvalidatedOrderProducts: unvalidatedClientOrder => Left(unvalidatedClientOrder as IOrderProducts),
+                whenInvalidOrderProducts: invalidatedClientOrder => Left(invalidatedClientOrder as IOrderProducts),
+                whenValidatedOrderProducts: validatedOrder => Left(validatedOrder as IOrderProducts),
+                whenCalculatedOrderProducts: calculatedOrderProducts => Left(calculatedOrderProducts as IOrderProducts),
+                whenPlacedOrderProducts: placedOrder => Right(placedOrder)
+                    );
+
+
+        }
+        */
+
+
         private Option<ClientEmail> CheckClientExists(IEnumerable<ClientEmail> clients, ClientEmail client)
         {
             if(clients.Any(c => c == client))

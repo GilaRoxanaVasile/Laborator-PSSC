@@ -13,6 +13,6 @@ namespace ProiectPSSC.Domain.Repositories
     {
         TryAsync<List<CalculatedProductPrice>> TryGetExistingOrderProducts();
         TryAsync<Unit> TrySaveProducts(PlacedOrderProducts order);
-
+      //  TryAsync<List<ClientProduct>> TryGetExistingClientProducts(IEnumerable<string> productCode, IEnumerable<int> quantity);
     }
 }

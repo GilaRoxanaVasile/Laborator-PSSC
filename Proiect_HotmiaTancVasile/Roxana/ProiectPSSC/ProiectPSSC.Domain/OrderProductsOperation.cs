@@ -15,6 +15,7 @@ namespace ProiectPSSC.Domain
     public static class OrderProductsOperation
     {
 
+        // validare date comanda: existenta email client, existenta cod produs, disponibilitate stoc pt cantitate produs 
         public static Task<IOrderProducts> ValidateOrder2(Func<ClientEmail, Option<ClientEmail>> checkClientExists, Func<ProductCode, Option<ProductCode>> checkProductExists,
                                                                 Func<Quantity, Option<Quantity>> checkStocAvailable, UnvalidatedOrderProducts orderProducts) =>
             orderProducts.ProductList
@@ -43,68 +44,13 @@ namespace ProiectPSSC.Domain
 
             from clientEmail in ClientEmail.TryParseClientEmail(unvalidatedClientOrder.ClientEmail)
                                 .ToEitherAsync($"Invalid client email ({unvalidatedClientOrder.ClientEmail})")
-            from price in ProductPrice.TryParsePrice(unvalidatedClientOrder.productPrice)
-                            .ToEitherAsync($"Invalid product price ({unvalidatedClientOrder.ClientEmail}, {unvalidatedClientOrder.ProductCode})")
+
             from clientExists in checkClientExists(clientEmail)
                                  .ToEitherAsync($"Client {clientEmail.Value} does not exist.")
-            select new ValidatedClientOrder(clientEmail, productCode, quantity, price);
-
-        /*
-        //validare existenta client
-        public static Task<IOrderProducts> ValidateOrder(Func<ClientEmail, Option<ClientEmail>> checkClientExists, UnvalidatedOrderProducts orderProducts) =>
-            orderProducts.ProductList
-                        .Select(ValidateOrderClients(checkClientExists))
-                        .Aggregate(CrateEmptyValidatedOrderProductsList().ToAsync(), ReduceValidProducts)
-                        .MatchAsync(
-                            Right: validatedOrderProducts => new ValidatedOrderProducts(validatedOrderProducts),
-                            LeftAsync: errorMessage => Task.FromResult((IOrderProducts) new InvalidOrderProducts(orderProducts.ProductList, errorMessage))
-                        );
-        private static Func<UnvalidatedClientOrder, EitherAsync<string, ValidatedClientOrder>> ValidateOrderClients(Func<ClientEmail, Option<ClientEmail>> checkClientExists) =>
-            unvalidatedClientProducts => ValidateOrderClients(checkClientExists, unvalidatedClientProducts);
-
-        private static EitherAsync<string, ValidatedClientOrder> ValidateOrderClients(Func<ClientEmail, Option<ClientEmail>> checkClientExists, UnvalidatedClientOrder unvalidatedClientOrder) =>
-            from orderProductCode in ProductCode.TryParseProductCode(unvalidatedClientOrder.ProductCode)
-                                            .ToEitherAsync($"Invalid product code ({unvalidatedClientOrder.ClientEmail}, {unvalidatedClientOrder.ProductCode})")
-            from quantity in Quantity.TryParseQuantity(unvalidatedClientOrder.Quantity)
-                                      .ToEitherAsync($"Invalid quantity ({unvalidatedClientOrder.ClientEmail}, {unvalidatedClientOrder.Quantity})")
-            from clientEmail in ClientEmail.TryParseClientEmail(unvalidatedClientOrder.ClientEmail)
-                                .ToEitherAsync($"Invalid client email ({unvalidatedClientOrder.ClientEmail})")
-            from price in ProductPrice.TryParsePrice(unvalidatedClientOrder.productPrice)
-                            .ToEitherAsync($"Invalid product price ({unvalidatedClientOrder.ClientEmail}, {unvalidatedClientOrder.ProductCode})")
-            from clientExists in checkClientExists(clientEmail)
-                                 .ToEitherAsync($"Client {clientEmail.Value} does not exist.")
-            select new ValidatedClientOrder(clientEmail, orderProductCode, quantity, price);
-
-
-
-        //validare existenta produs
-        public static Task<IOrderProducts> ValidateProduct(Func<ProductCode, Option<ProductCode>> checkProductExists, UnvalidatedOrderProducts orderProducts) =>
-        orderProducts.ProductList
-                .Select(ValidateOrderProducts(checkProductExists))
-                .Aggregate(CrateEmptyValidatedOrderProductsList().ToAsync(), ReduceValidProducts)
-                .MatchAsync(
-                    Right: validatedOrderProducts => new ValidatedOrderProducts(validatedOrderProducts),
-                    LeftAsync: errorMessage => Task.FromResult((IOrderProducts)new InvalidOrderProducts(orderProducts.ProductList, errorMessage))
-                );
-        private static Func<UnvalidatedClientOrder, EitherAsync<string, ValidatedClientOrder>> ValidateOrderProducts(Func<ProductCode, Option<ProductCode>> checkProductExists) =>
-            unvalidatedClientProducts => ValidateOrderProducts(checkProductExists, unvalidatedClientProducts);
-
-        private static EitherAsync<string, ValidatedClientOrder> ValidateOrderProducts(Func<ProductCode, Option<ProductCode>> checkProductExists, UnvalidatedClientOrder unvalidatedClientOrder) =>
-            from productCode in ProductCode.TryParseProductCode(unvalidatedClientOrder.ProductCode)
-                                            .ToEitherAsync($"Invalid product code ({unvalidatedClientOrder.ClientEmail}, {unvalidatedClientOrder.ProductCode})")
-            from quantity in Quantity.TryParseQuantity(unvalidatedClientOrder.Quantity)
-                                      .ToEitherAsync($"Invalid quantity ({unvalidatedClientOrder.ClientEmail}, {unvalidatedClientOrder.Quantity})")
-            from clientEmail in ClientEmail.TryParseClientEmail(unvalidatedClientOrder.ClientEmail)
-                                .ToEitherAsync($"Invalid client email ({unvalidatedClientOrder.ClientEmail})")
-            from price in ProductPrice.TryParsePrice(unvalidatedClientOrder.productPrice)
-                            .ToEitherAsync($"Invalid product code ({unvalidatedClientOrder.ClientEmail}, {unvalidatedClientOrder.ProductCode})")
-            from productExists in checkProductExists(productCode)
-                                 .ToEitherAsync($"Product {productCode.Value} does not exist.")
-            select new ValidatedClientOrder(clientEmail, productCode, quantity, price);
-        */
+            select new ValidatedClientOrder(clientEmail, productCode, quantity);
 
         
-        //creare lista order goala
+        //creare lista order goala comanda nevalidata
         private static Either<string, List<ValidatedClientOrder>> CrateEmptyValidatedOrderProductsList() =>
             Right(new List<ValidatedClientOrder>());
 
@@ -119,59 +65,39 @@ namespace ProiectPSSC.Domain
             return list;
         }
 
-        public static IOrderProducts CalculateFinalOrdersPrices(IOrderProducts orderProducts) => orderProducts.Match(
-           whenUnvalidatedOrderProducts: unvalidatedClientOrder => unvalidatedClientOrder,
-           whenInvalidOrderProducts: invalidatedClientOrder => invalidatedClientOrder,
-           whenPlacedOrderProducts: placedOrder => placedOrder,
-           whenCalculatedOrderProducts: calculatedOrderProducts => calculatedOrderProducts,
-           whenValidatedOrderProducts: CalculateOrderFinalPrice
-       );
-
-        public static IOrderProducts CalculateFinalPrices(IOrderProducts orderProducts) => orderProducts.Match(
+        //calcularea pretului comenzii
+        public static IOrderProducts CalculateFinalPrices(IOrderProducts orderProducts, IEnumerable<Products> catalog) => orderProducts.Match(
             whenUnvalidatedOrderProducts: unvalidatedClientOrder => unvalidatedClientOrder,
             whenInvalidOrderProducts: invalidatedClientOrder => invalidatedClientOrder,
             whenPlacedOrderProducts: placedOrder => placedOrder,
             whenCalculatedOrderProducts: calculatedOrderProducts => calculatedOrderProducts,
-            whenValidatedOrderProducts: CalculateProductFinalPrice
+            whenValidatedOrderProducts: validated => CalculateProductFinalPrice2(validated, catalog)
             );
 
-        private static IOrderProducts CalculateProductFinalPrice(ValidatedOrderProducts validOrder) =>
-            new CalculatedOrderProducts(validOrder.ProductList
-                                                   .Select(CalculateFinalProductPrice)
-                                                   .ToList()
-                                                   .AsReadOnly());
-        private static IOrderProducts CalculateOrderFinalPrice(ValidatedOrderProducts validOrder) =>
-         new CalculatedOrderProducts(validOrder.ProductList
-                                           .Select(CalculateFinalProductPrice)
-                                           .ToList()
-                                           .AsReadOnly());
-
-        /*
-        public static CalculatedOrderTotalPayment CalculateFinalOrderPayment(ValidatedClientOrder validatedClientOrder, CalculatedProductPrice calculatedProduct, decimal oldTotalOrderPrice)
-        { 
-            return new CalculatedOrderTotalPayment(validatedClientOrder.clientEmail, calculatedProduct, new ProductPrice(calculatedProduct.price.Price + oldTotalOrderPrice));
-            
-           return new CalculatedOrderTotalPayment
-                 (validatedClientOrder.clientEmail,
-                 new CalculatedProductPrice(validatedClientOrder.productCode, validatedClientOrder.quantity, validatedClientOrder.price, new ProductPrice(validatedClientOrder.price.Price * validatedClientOrder.quantity.Value)),
-                 new ProductPrice(validatedClientOrder.price.Price * validatedClientOrder.quantity.Value)); 
+        //calculare pret pt fiecare produs din comanda
+        private static IOrderProducts CalculateProductFinalPrice2(ValidatedOrderProducts validOrder, IEnumerable<Products> catalog)
+        {
+            var CalcOrderList = new List<CalculatedProductPrice>();
+            foreach (ValidatedClientOrder product in validOrder.ProductList)
+            {
+                var calcOrder = CalculateFinalProductPrice2(product, catalog);
+                CalcOrderList.Add(calcOrder);
+            }
+            return new CalculatedOrderProducts(CalcOrderList);
         }
-        */
 
+        //calculare pret total produs = pret*cantitate
         private static CalculatedProductPrice CalculateFinalProductPrice2(ValidatedClientOrder validatedClientOrder, IEnumerable<Products> catalog)
         {
-            var productPrice= catalog.Where(c => validatedClientOrder.productCode == c.code)
+
+            var productPrice = catalog.Where(c => validatedClientOrder.productCode == c.code)
                                 .Select(c => c.price);
 
-            return new CalculatedProductPrice(validatedClientOrder.productCode,
-        validatedClientOrder.quantity, validatedClientOrder.price, new ProductPrice(validatedClientOrder.price.Price * validatedClientOrder.quantity.Value));
+            return new CalculatedProductPrice(validatedClientOrder.clientEmail, validatedClientOrder.productCode,
+                 validatedClientOrder.quantity, productPrice.FirstOrDefault(), new ProductPrice(productPrice.FirstOrDefault().Price * validatedClientOrder.quantity.Value));
         }
 
-        //calculez pret total produs
-        private static CalculatedProductPrice CalculateFinalProductPrice(ValidatedClientOrder validatedClientOrder) 
-             => new CalculatedProductPrice(validatedClientOrder.productCode,
-                validatedClientOrder.quantity, validatedClientOrder.price, new ProductPrice(validatedClientOrder.price.Price * validatedClientOrder.quantity.Value)); 
-
+        //actualizare lista
         public static IOrderProducts MergeProducts(IOrderProducts products, IEnumerable<CalculatedProductPrice> existingProducts) =>
             products.Match(
             whenUnvalidatedOrderProducts: unvalidatedClientOrder => unvalidatedClientOrder,
@@ -190,6 +116,68 @@ namespace ProiectPSSC.Domain
                                                .AsReadOnly();
             return new CalculatedOrderProducts(allProducts);
         }
+
+        public static IOrderProducts PlaceOrder(IOrderProducts products) => products.Match(
+            whenUnvalidatedOrderProducts: unvalidatedClientOrder => unvalidatedClientOrder,
+            whenInvalidOrderProducts: invalidatedClientOrder => invalidatedClientOrder,
+            whenPlacedOrderProducts: placedOrder => placedOrder,
+            whenValidatedOrderProducts: validatedOrder => validatedOrder,
+            whenCalculatedOrderProducts:calculated =>  GenerateExport(calculated)
+            );
+
+        // generare expost si calculare pret total comanda 
+        private static IOrderProducts GenerateExport(CalculatedOrderProducts calculatedOrder)
+        {
+            decimal totalPrice = 0;
+            foreach(CalculatedProductPrice product in calculatedOrder.ProductList)
+            {
+                totalPrice = totalPrice + product.totalPrice.Price;
+            }
+           return new PlacedOrderProducts(calculatedOrder.ProductList, new ProductPrice(totalPrice),
+                calculatedOrder.ProductList.Aggregate(new StringBuilder(), CreateCsvLine).ToString(),
+                                    DateTime.Now);
+        }
+
+        private static StringBuilder CreateCsvLine(StringBuilder export, CalculatedProductPrice product) =>
+           export.AppendLine($"{product.code.Value}, {product.quantity.Value}, {product.ProductId}, {product.totalPrice.ToString}");
+
+
+
+        /* -------------------------------------------- */
+
+        /*
+        public static IOrderProducts CalculateFinalOrdersPrices(IOrderProducts orderProducts, IEnumerable<Products> catalog) => orderProducts.Match(
+           whenUnvalidatedOrderProducts: unvalidatedClientOrder => unvalidatedClientOrder,
+           whenInvalidOrderProducts: invalidatedClientOrder => invalidatedClientOrder,
+           whenPlacedOrderProducts: placedOrder => placedOrder,
+           whenCalculatedOrderProducts: calculatedOrderProducts => calculatedOrderProducts,
+           whenValidatedOrderProducts: validated => CalculateOrderFinalPrice(validated, catalog)
+        );'
+                */
+
+
+                /*
+        private static IOrderProducts CalculateProductFinalPrice(ValidatedOrderProducts validOrder, IEnumerable<Products> catalog) =>
+            new CalculatedOrderProducts(validOrder.ProductList
+                                                   .Select(CalculateFinalProductPrice2)
+                                                   .ToList()
+                                                   .AsReadOnly());
+
+
+        private static IOrderProducts CalculateOrderFinalPrice(ValidatedOrderProducts validOrder, IEnumerable<Products> catalog) =>
+         new CalculatedOrderProducts(validOrder.ProductList
+                                           .Select(CalculateFinalProductPrice2())
+                                           .ToList()
+                                           .AsReadOnly());
+        */
+
+        //calculez pret total produs
+        /*
+        private static CalculatedProductPrice CalculateFinalProductPrice(ValidatedClientOrder validatedClientOrder) 
+             => new CalculatedProductPrice(validatedClientOrder.productCode,
+                validatedClientOrder.quantity, validatedClientOrder.price, new ProductPrice(validatedClientOrder.price.Price * validatedClientOrder.quantity.Value)); 
+        */
+
 
         /*
         private static IOrderProducts MergeOrders(IEnumerable<CalculatedOrderTotalPayment> newList, IEnumerable<CalculatedOrderTotalPayment> existingList)
@@ -227,29 +215,5 @@ namespace ProiectPSSC.Domain
 
         */
 
-        
-        public static IOrderProducts PlaceOrder(ClientEmail client, IOrderProducts products) => products.Match(
-            whenUnvalidatedOrderProducts: unvalidatedClientOrder => unvalidatedClientOrder,
-            whenInvalidOrderProducts: invalidatedClientOrder => invalidatedClientOrder,
-            whenPlacedOrderProducts: placedOrder => placedOrder,
-            whenValidatedOrderProducts: validatedOrder => validatedOrder,
-            whenCalculatedOrderProducts:calculated =>  GenerateExport(client, calculated)
-            );
-
-
-        private static IOrderProducts GenerateExport(ClientEmail client, CalculatedOrderProducts calculatedOrder)
-        {
-            decimal totalPrice = 0;
-            foreach(CalculatedProductPrice product in calculatedOrder.ProductList)
-            {
-                totalPrice = totalPrice + product.totalPrice.Price;
-            }
-           return new PlacedOrderProducts(client, calculatedOrder.ProductList, new ProductPrice(totalPrice),
-                calculatedOrder.ProductList.Aggregate(new StringBuilder(), CreateCsvLine).ToString(),
-                                    DateTime.Now);
-        }
-
-        private static StringBuilder CreateCsvLine(StringBuilder export, CalculatedProductPrice product) =>
-           export.AppendLine($"{product.code.Value}, {product.quantity.Value}, {product.ProductId}, {product.totalPrice.ToString}");
     }
 }

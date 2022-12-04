@@ -9,10 +9,9 @@ using static ProiectPSSC.Domain.Models.OrderProducts;
 
 namespace ProiectPSSC.Domain.Repositories
 {
-    public interface IOrderLineRepository
+    public interface IOrderHeaderRepository
     {
-        TryAsync<List<CalculatedProductPrice>> TryGetExistingOrderProducts();
-        TryAsync<Unit> TrySaveProducts(PlacedOrderProducts order);
-
+        TryAsync<List<CalculatedOrderTotalPrice>> TryGetExistingClientOrders();
+        TryAsync<Unit> TrySaveOrders(PlacedOrderProducts order);
     }
 }

@@ -11,6 +11,5 @@ namespace ProiectPSSC.Domain.Repositories
     public interface IClientRepository
     {
         TryAsync<List<ClientEmail>> TryGetExistingClients(IEnumerable<string> clientsToCheck);
-    
     }
 }

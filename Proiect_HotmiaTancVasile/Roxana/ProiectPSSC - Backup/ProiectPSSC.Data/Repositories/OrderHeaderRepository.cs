@@ -13,14 +13,16 @@ using ProiectPSSC.Data.Models;
 namespace ProiectPSSC.Data.Repositories
 {
     /*
+     * 
+     
      CREATE TABLE [dbo].[OrderHeader](
 	[OrderId] [int] IDENTITY(1,1) NOT NULL,
 	[ClientId] [int] NOT NULL,
 	[TotalPrice] [decimal] NOT NULL,
 	[PaymentOption] [varchar](20) NOT NULL,
 	[CardDetails] [varchar](50),
+     
      */
-
     public class OrderHeaderRepository : IOrderHeaderRepository
     {
         private readonly OrderContext dbContext;

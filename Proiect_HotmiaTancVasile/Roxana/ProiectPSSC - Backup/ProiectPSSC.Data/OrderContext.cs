@@ -11,9 +11,12 @@ namespace ProiectPSSC.Data
 {
     public class OrderContext : DbContext
     {
-        public OrderContext(DbContextOptions<OrderContext> options) : base(options) { }
+        public OrderContext(DbContextOptions<OrderContext> options) : base(options)
+        {
+        }
 
         public DbSet<ClientDto> Clients { get; set; }
+
         public DbSet<ProductDto> Products { get; set; }
         public DbSet<OrderLineDto> OrderLines { get; set; }
         public DbSet<OrderHeaderDto> OrderHeaders { get; set; }

@@ -21,7 +21,7 @@ namespace ProiectPSSC.Domain.Models
             }
             else
             {
-                throw new InvalidPriceException($"{price} invalid");
+                throw new Exception($"{price} invalid");
             }
         }
         public static bool IsValid(decimal numericPrice) => numericPrice > 0;

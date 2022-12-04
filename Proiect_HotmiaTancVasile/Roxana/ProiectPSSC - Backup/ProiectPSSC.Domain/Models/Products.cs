@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace ProiectPSSC.Domain.Models
 {
-    public record Products(ProductCode code, Quantity stoc, ProductPrice price);
+    public record Products(ProductCode code, Quantity stoc, ProductPrice price)
+    {
 
+    }
 }
