@@ -15,6 +15,41 @@ namespace ProiectPSSC.Domain
     public static class OrderProductsOperation
     {
 
+        public static Task<IOrderProducts> ValidateOrder2(Func<ClientEmail, Option<ClientEmail>> checkClientExists, Func<ProductCode, Option<ProductCode>> checkProductExists,
+                                                                Func<Quantity, Option<Quantity>> checkStocAvailable, UnvalidatedOrderProducts orderProducts) =>
+            orderProducts.ProductList
+                        .Select(ValidateOrderClients2(checkClientExists, checkStocAvailable, checkProductExists))
+                        .Aggregate(CrateEmptyValidatedOrderProductsList().ToAsync(), ReduceValidProducts)
+                        .MatchAsync(
+                            Right: validatedOrderProducts => new ValidatedOrderProducts(validatedOrderProducts),
+                            LeftAsync: errorMessage => Task.FromResult((IOrderProducts)new InvalidOrderProducts(orderProducts.ProductList, errorMessage))
+                        );
+
+        private static Func<UnvalidatedClientOrder, EitherAsync<string, ValidatedClientOrder>> ValidateOrderClients2(Func<ClientEmail, Option<ClientEmail>> checkClientExists,
+                                                Func<Quantity, Option<Quantity>> checkStocAvailable, Func<ProductCode, Option<ProductCode>> checkProductExists) =>
+           unvalidatedClientProducts => ValidateOrderClients2(checkClientExists, checkStocAvailable, checkProductExists, unvalidatedClientProducts);
+
+        private static EitherAsync<string, ValidatedClientOrder> ValidateOrderClients2(Func<ClientEmail, Option<ClientEmail>> checkClientExists,
+                        Func<Quantity, Option<Quantity>> checkStocAvailable, Func<ProductCode, Option<ProductCode>> checkProductExists, UnvalidatedClientOrder unvalidatedClientOrder) =>
+            from productCode in ProductCode.TryParseProductCode(unvalidatedClientOrder.ProductCode)
+                                            .ToEitherAsync($"Invalid product code ({unvalidatedClientOrder.ClientEmail}, {unvalidatedClientOrder.ProductCode})")
+            from productExists in checkProductExists(productCode)
+                     .ToEitherAsync($"Product {productCode.Value} does not exist.")
+
+            from quantity in Quantity.TryParseQuantity(unvalidatedClientOrder.Quantity)
+                                      .ToEitherAsync($"Invalid quantity ({unvalidatedClientOrder.ClientEmail}, {unvalidatedClientOrder.Quantity})")
+            from stocAvailable in checkStocAvailable(quantity)
+                                .ToEitherAsync($"Quantity for product {productCode.Value} is too much.")
+
+            from clientEmail in ClientEmail.TryParseClientEmail(unvalidatedClientOrder.ClientEmail)
+                                .ToEitherAsync($"Invalid client email ({unvalidatedClientOrder.ClientEmail})")
+            from price in ProductPrice.TryParsePrice(unvalidatedClientOrder.productPrice)
+                            .ToEitherAsync($"Invalid product price ({unvalidatedClientOrder.ClientEmail}, {unvalidatedClientOrder.ProductCode})")
+            from clientExists in checkClientExists(clientEmail)
+                                 .ToEitherAsync($"Client {clientEmail.Value} does not exist.")
+            select new ValidatedClientOrder(clientEmail, productCode, quantity, price);
+
+        /*
         //validare existenta client
         public static Task<IOrderProducts> ValidateOrder(Func<ClientEmail, Option<ClientEmail>> checkClientExists, UnvalidatedOrderProducts orderProducts) =>
             orderProducts.ProductList
@@ -66,9 +101,9 @@ namespace ProiectPSSC.Domain
             from productExists in checkProductExists(productCode)
                                  .ToEitherAsync($"Product {productCode.Value} does not exist.")
             select new ValidatedClientOrder(clientEmail, productCode, quantity, price);
+        */
 
-
-
+        
         //creare lista order goala
         private static Either<string, List<ValidatedClientOrder>> CrateEmptyValidatedOrderProductsList() =>
             Right(new List<ValidatedClientOrder>());
@@ -89,7 +124,7 @@ namespace ProiectPSSC.Domain
            whenInvalidOrderProducts: invalidatedClientOrder => invalidatedClientOrder,
            whenPlacedOrderProducts: placedOrder => placedOrder,
            whenCalculatedOrderProducts: calculatedOrderProducts => calculatedOrderProducts,
-           whenValidatedOrderProducts: CalculateProductFinalPrice
+           whenValidatedOrderProducts: CalculateOrderFinalPrice
        );
 
         public static IOrderProducts CalculateFinalPrices(IOrderProducts orderProducts) => orderProducts.Match(
@@ -123,6 +158,14 @@ namespace ProiectPSSC.Domain
         }
         */
 
+        private static CalculatedProductPrice CalculateFinalProductPrice2(ValidatedClientOrder validatedClientOrder, IEnumerable<Products> catalog)
+        {
+            var productPrice= catalog.Where(c => validatedClientOrder.productCode == c.code)
+                                .Select(c => c.price);
+
+            return new CalculatedProductPrice(validatedClientOrder.productCode,
+        validatedClientOrder.quantity, validatedClientOrder.price, new ProductPrice(validatedClientOrder.price.Price * validatedClientOrder.quantity.Value));
+        }
 
         //calculez pret total produs
         private static CalculatedProductPrice CalculateFinalProductPrice(ValidatedClientOrder validatedClientOrder) 

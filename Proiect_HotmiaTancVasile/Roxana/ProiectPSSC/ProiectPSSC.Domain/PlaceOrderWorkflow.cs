@@ -40,7 +40,17 @@ namespace ProiectPSSC.Domain
             var result = from products in productRepository.TryGetExistingProducts(unvalidatedOrder.ProductList.Select(product => product.ProductCode))
                                                           .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product") as IOrderProducts)
                          let checkProductExists = (Func<ProductCode, Option<ProductCode>>)(product => CheckProducttExists(products, product))
-                     
+
+                         from productStoc in productRepository.TryGetProductStoc(unvalidatedOrder.ProductList.Select(product => product.ProductCode))
+                                                          .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product stoc") as IOrderProducts)
+                         let checkStocAvailable = (Func<Quantity, Option<Quantity>>)(product => CheckStocAvailable(productStoc, product))
+
+                         from productPrices in productRepository.TryGetProductPrices(unvalidatedOrder.ProductList.Select(product => product.ProductCode))
+                                                         .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product stoc") as IOrderProducts)
+
+                         from productCatalog in productRepository.TryGetProductCatalog(unvalidatedOrder.ProductList.Select(product => product.ProductCode))
+                                                .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product stoc") as IOrderProducts)
+
                          from allOrderProducts in orderLineRepository.TryGetExistingOrderProducts()
                                                  .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la produs") as IOrderProducts)
 
@@ -51,7 +61,7 @@ namespace ProiectPSSC.Domain
                          from clients in orderHeaderRepository.TryGetExistingClientOrders()
                                     .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la client") as IOrderProducts)
 
-                         from placedOrder in ExecuteWorkflowAsync(unvalidatedOrder, allOrderProducts, clients, checkClientExists, checkProductExists).ToAsync()
+                         from placedOrder in ExecuteWorkflowAsync(unvalidatedOrder, allOrderProducts, clients, productCatalog, checkClientExists, checkStocAvailable, checkProductExists).ToAsync()
 
                          from _ in orderHeaderRepository.TrySaveOrders(placedOrder)
                                  .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product") as IOrderProducts)
@@ -64,15 +74,15 @@ namespace ProiectPSSC.Domain
 
          }
         private async Task<Either<IOrderProducts, PlacedOrderProducts>> ExecuteWorkflowAsync
-        (UnvalidatedOrderProducts unvalidatedOrder,IEnumerable<CalculatedProductPrice> existingProducts, IEnumerable<CalculatedOrderTotalPrice> existingOrders,
-            Func<ClientEmail, Option<ClientEmail>> checkClientExists, Func <ProductCode, Option<ProductCode>> checkProductExists)
+        (UnvalidatedOrderProducts unvalidatedOrder,IEnumerable<CalculatedProductPrice> existingProducts, IEnumerable<CalculatedOrderTotalPrice> existingOrders, IEnumerable<Products> productCatalog,
+            Func<ClientEmail, Option<ClientEmail>> checkClientExists, Func<Quantity, Option<Quantity>> checkStocAvailable, Func <ProductCode, Option<ProductCode>> checkProductExists)
         {
-            IOrderProducts products = await ValidateProduct(checkProductExists, unvalidatedOrder);
-            IOrderProducts order = await ValidateOrder(checkClientExists, unvalidatedOrder);
-            products = CalculateFinalOrdersPrices(products);
+           // IOrderProducts products = await ValidateProduct(checkProductExists, unvalidatedOrder);
+            IOrderProducts order = await ValidateOrder2(checkClientExists, checkProductExists, checkStocAvailable, unvalidatedOrder);
+            order = CalculateFinalOrdersPrices(order);
             //orders = CalculateFinalPrices(orders);
-            products = MergeProducts(products, existingProducts);
-            order = PlaceOrder(new ClientEmail(checkClientExists.ToString()), products); //aoleu
+            order = MergeProducts(order, existingProducts);
+            order = PlaceOrder(new ClientEmail(checkClientExists.ToString()), order); //aoleu
 
             return order.Match<Either<IOrderProducts, PlacedOrderProducts>>(
                 whenUnvalidatedOrderProducts: unvalidatedClientOrder => Left(unvalidatedClientOrder as IOrderProducts),

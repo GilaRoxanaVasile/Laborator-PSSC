@@ -41,5 +41,27 @@ namespace ProiectPSSC.Data.Repositories
                 new Quantity(product.Stoc), new ProductPrice(product.Price)))
                     .ToList();
         };
+
+        public TryAsync<List<Quantity>> TryGetProductStoc(IEnumerable<string> productCode) => async () =>
+        {
+            var catalog = await orderContext.Products
+                            .Where(product => productCode.Contains(product.Code))
+                            .AsNoTracking()
+                            .ToListAsync();
+            return catalog.Select(
+                product => new Quantity(product.Stoc))
+                            .ToList();
+        };
+
+        public TryAsync<List<ProductPrice>> TryGetProductPrices(IEnumerable<string> productCode) => async () =>
+        {
+            var catalog = await orderContext.Products
+                            .Where(product => productCode.Contains(product.Code))
+                            .AsNoTracking()
+                            .ToListAsync();
+            return catalog.Select(
+                product => new ProductPrice(product.Price))
+                            .ToList();
+        };
     }
 }

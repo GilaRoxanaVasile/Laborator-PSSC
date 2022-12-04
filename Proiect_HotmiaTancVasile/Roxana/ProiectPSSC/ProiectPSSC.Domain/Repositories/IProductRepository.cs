@@ -12,5 +12,7 @@ namespace ProiectPSSC.Domain.Repositories
     {
         TryAsync<List<ProductCode>> TryGetExistingProducts(IEnumerable<string> productsToCheck);
         TryAsync<List<Products>> TryGetProductCatalog(IEnumerable<string> productCode);
+        TryAsync<List<Quantity>> TryGetProductStoc(IEnumerable<string> productCode);
+        TryAsync<List<ProductPrice>> TryGetProductPrices(IEnumerable<string> productCode);
     }
 }
