@@ -4,18 +4,11 @@ using Exemple.Domain;
 using Exemple.Domain.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Example.Api
 {
@@ -32,11 +25,17 @@ namespace Example.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<GradesContext>(options =>
+<<<<<<< HEAD
                 options.UseSqlServer(Configuration.GetConnectionString("SQL1")));
+=======
+                options.UseSqlServer(Configuration.GetConnectionString("sql1")));
+>>>>>>> 83ab5c17ed7e012e6bac86b94493f298e807495e
 
             services.AddTransient<IGradesRepository, GradesRepository>();
             services.AddTransient<IStudentsRepository, StudentsRepository>();
             services.AddTransient<PublishGradeWorkflow>();
+
+            services.AddHttpClient();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
