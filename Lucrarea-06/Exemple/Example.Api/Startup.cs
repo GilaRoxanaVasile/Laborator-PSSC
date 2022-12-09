@@ -25,11 +25,7 @@ namespace Example.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<GradesContext>(options =>
-<<<<<<< HEAD
-                options.UseSqlServer(Configuration.GetConnectionString("SQL1")));
-=======
-                options.UseSqlServer(Configuration.GetConnectionString("sql1")));
->>>>>>> 83ab5c17ed7e012e6bac86b94493f298e807495e
+            options.UseSqlServer(Configuration.GetConnectionString("sql1")));
 
             services.AddTransient<IGradesRepository, GradesRepository>();
             services.AddTransient<IStudentsRepository, StudentsRepository>();

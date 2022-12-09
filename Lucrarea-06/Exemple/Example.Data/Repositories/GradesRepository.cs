@@ -56,7 +56,7 @@ namespace Example.Data.Repositories
                                         Activity = g.ActivityGrade.Value,
                                         Final = g.FinalGrade.Value,
                                     });
-
+            //dbContext.Grades.AddRange
             dbContext.AddRange(newGrades);
             foreach (var entity in updatedGrades)
             {

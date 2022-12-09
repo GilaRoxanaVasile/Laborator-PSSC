@@ -10,6 +10,8 @@ using ProiectPSSC.Domain;
 using ProiectPSSC.Domain.Repositories;
 using ProiectPSSC.Api.Models;
 using ProiectPSSC.Domain.Models;
+using System.Net.Http;
+using Newtonsoft.Json;
 
 namespace ProiectPSSC.Api.Controllers
 {
@@ -18,10 +20,14 @@ namespace ProiectPSSC.Api.Controllers
     public class ClientProductController:ControllerBase
     {
         private ILogger<ClientProductController> logger;
+        private readonly PlaceOrderWorkflow placeOrderWorkflow;
+        private readonly IHttpClientFactory httpClientFactory;
 
-        public ClientProductController(ILogger<ClientProductController> logger)
+        public ClientProductController(ILogger<ClientProductController> logger, PlaceOrderWorkflow placeOrderWorkflow, IHttpClientFactory httpClientFactory)
         {
             this.logger = logger;
+            this.httpClientFactory = httpClientFactory;
+            this.placeOrderWorkflow = placeOrderWorkflow;
         }
         [HttpGet]
         public async Task<IActionResult> GetAllProducts([FromServices] IOrderHeaderRepository productRepository) =>
@@ -50,11 +56,55 @@ namespace ProiectPSSC.Api.Controllers
                 .AsReadOnly();
             PlaceOrderCommand command = new(unvalidatedOrder);
             var result = await placeOrderWorkflow.EventAsync(command);
-            return result.Match<IActionResult>(
-                whenOrderPlacedFailedEvent: failedEvent => StatusCode(StatusCodes.Status500InternalServerError, failedEvent.Reason),
-                whenOrderPlacedSuccededEvent: succesEvent => Ok()
+
+            //return result.Match<IActionResult>(
+            //    whenOrderPlacedFailedEvent: failedEvent => StatusCode(StatusCodes.Status500InternalServerError, failedEvent.Reason),
+            //    whenOrderPlacedSuccededEvent: succesEvent => Ok(succesEvent)
+            //    );
+
+            return await result.MatchAsync(
+                whenOrderPlacedFailedEvent: HandleFailure,
+                whenOrderPlacedSuccededEvent: HandleSucces
                 );
+         }
+
+        private Task<IActionResult> HandleFailure(OrderPlacedEvent.OrderPlacedFailedEvent failedEvent)
+        {
+            return Task.FromResult<IActionResult>(StatusCode(StatusCodes.Status500InternalServerError, failedEvent.Reason));
         }
+
+        private async Task<IActionResult> HandleSucces(OrderPlacedEvent.OrderPlacedSuccededEvent succededEvent)
+        {
+            var w1 = TriggerBilling(succededEvent);
+            var w2 = TriggerShipping(succededEvent);
+            await Task.WhenAll(w1, w2);
+            return Ok();
+        }
+
+        private async Task <Boolean> TriggerBilling(OrderPlacedEvent.OrderPlacedSuccededEvent succededEvent)
+        {
+            var httpRequestMessage = new HttpRequestMessage(
+            HttpMethod.Post, "")
+            {
+                Content = new StringContent(JsonConvert.SerializeObject(succededEvent), Encoding.UTF8, "application/json")
+            };
+            var client = httpClientFactory.CreateClient();
+            var response = await client.SendAsync(httpRequestMessage);
+            return true;
+        }
+
+        private async Task<Boolean> TriggerShipping(OrderPlacedEvent.OrderPlacedSuccededEvent succededEvent)
+        {
+            var httpRequestMessage = new HttpRequestMessage(
+            HttpMethod.Post, "")
+            {
+                Content = new StringContent(JsonConvert.SerializeObject(succededEvent), Encoding.UTF8, "application/json")
+            };
+            var client = httpClientFactory.CreateClient();
+            var response = await client.SendAsync(httpRequestMessage);
+            return true;
+        }
+
 
         private static UnvalidatedClientOrder MapInputClientOrderToUnvalidatedOrder(InputClientProduct inputClientProduct) =>
             new UnvalidatedClientOrder(
