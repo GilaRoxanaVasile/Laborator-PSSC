@@ -1,9 +1,8 @@
- 
-CREATE TABLE [dbo].[Product](
+ CREATE TABLE [dbo].[Product](
 	[ProductId] [int] IDENTITY(1,1) NOT NULL,
 	[Code] [varchar](7) NOT NULL,
 	[Stoc] [int] NOT NULL,
-	[Pret] [decimal] NOT NULL,
+	[Price] [decimal] NOT NULL,
  CONSTRAINT [PK_Product] PRIMARY KEY CLUSTERED 
 (
 	[ProductId] ASC
@@ -16,6 +15,7 @@ CREATE TABLE [dbo].[Client](
 	[Email] [varchar](20) NOT NULL,
 	[Name] [varchar](30) NOT NULL,
 	[PhoneNumber] [varchar](15) NOT NULL,
+	[CardDetails] [varchar](50), 
  CONSTRAINT [PK_Client] PRIMARY KEY CLUSTERED 
 (
 	[ClientId] ASC
@@ -29,7 +29,6 @@ CREATE TABLE [dbo].[OrderHeader](
 	[ClientId] [int] NOT NULL,
 	[TotalPrice] [decimal] NOT NULL,
 	[PaymentOption] [varchar](20) NOT NULL,
-	[CardDetails] [varchar](50), 
  CONSTRAINT [PK_OrderHeader] PRIMARY KEY CLUSTERED 
 (
 	[OrderId] ASC
@@ -40,7 +39,7 @@ GO
 CREATE TABLE [dbo].[OrderLine](
 	[OrderLineId] [int] IDENTITY(1,1) NOT NULL,
 	[OrderId] [int] NOT NULL,
-	[ProductId] [int] NOT NULL, // schimb cu product code sau il adaug si pe asta
+	[ProductId] [int] NOT NULL,
 	[Code] [varchar](7) NOT NULL,
 	[Quantity] [int] NULL,
  CONSTRAINT [PK_OrderLine] PRIMARY KEY CLUSTERED 

@@ -16,9 +16,9 @@ namespace ProiectPSSC.Data.Repositories
      CREATE TABLE [dbo].[OrderHeader](
 	[OrderId] [int] IDENTITY(1,1) NOT NULL,
 	[ClientId] [int] NOT NULL,
+    [ClientEmail] [varchar](20) NOT NULL,
 	[TotalPrice] [decimal] NOT NULL,
 	[PaymentOption] [varchar](20) NOT NULL,
-	[CardDetails] [varchar](50),
      */
 
     public class OrderHeaderRepository : IOrderHeaderRepository
@@ -49,13 +49,21 @@ namespace ProiectPSSC.Data.Repositories
             .Where(p => p.IsUpdated && p.ProductId == 0)
             .Select(p => new OrderHeaderDto()
             {
-
+                 // OrderId =
+                  ClientId = clients[p.clientEmail.Value].Single().ClientId,
+                  ClientEmail = p.clientEmail.Value,
+                  TotalPrice = p.totalPrice.Price,
+                  PaymentOption = "ramburs", //tiganie aici, rezolva
             });
 
             var updatedOrderProducts = order.ProductList.Where(p => p.IsUpdated && p.ProductId == 0)
                 .Select(p => new OrderHeaderDto()
                 {
-
+                    OrderId = p.OrderId,
+                    ClientId = clients[p.clientEmail.Value].Single().ClientId,
+                    ClientEmail = p.clientEmail.Value,
+                    TotalPrice = p.totalPrice.Price,
+                    PaymentOption = "ramburs", //tiganie aici, rezolva
                 });
 
             dbContext.AddRange(newOrderProducts);

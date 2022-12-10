@@ -11,6 +11,14 @@ using LanguageExt;
 
 namespace ProiectPSSC.Data.Repositories
 {
+    /*
+    REATE TABLE [dbo].[Client](
+	[ClientId] [int] IDENTITY(1,1) NOT NULL,
+	[Email] [varchar](20) NOT NULL,
+	[Name] [varchar](30) NOT NULL,
+	[PhoneNumber] [varchar](15) NOT NULL,
+	[CardDetails] [varchar](50),  
+     */
     public class ClientRepository : IClientRepository
     {
         private readonly OrderContext _orderContext;

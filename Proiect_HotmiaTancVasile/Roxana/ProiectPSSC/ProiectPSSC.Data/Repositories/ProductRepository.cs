@@ -11,6 +11,13 @@ using LanguageExt;
 
 namespace ProiectPSSC.Data.Repositories
 {
+    /*
+     CREATE TABLE [dbo].[Product](
+	[ProductId] [int] IDENTITY(1,1) NOT NULL,
+	[Code] [varchar](7) NOT NULL,
+	[Stoc] [int] NOT NULL,
+	[Price] [decimal] NOT NULL,
+     */
     public class ProductRepository : IProductRepository
     {
         private readonly OrderContext orderContext;
