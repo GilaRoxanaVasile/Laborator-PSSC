@@ -24,6 +24,10 @@ namespace ProiectPSSC.Data.Repositories
     public class OrderHeaderRepository : IOrderHeaderRepository
     {
         private readonly OrderContext dbContext;
+	public OrderHeaderRepository(OrderContext ctx)
+        {
+            dbContext = ctx;
+        }
 
         public TryAsync<List<CalculatedOrderTotalPrice>> TryGetExistingClientOrders() => async () => (await (
             from p in dbContext.Products
