@@ -57,53 +57,53 @@ namespace ProiectPSSC.Api.Controllers
             PlaceOrderCommand command = new(unvalidatedOrder);
             var result = await placeOrderWorkflow.EventAsync(command);
 
-            //return result.Match<IActionResult>(
-            //    whenOrderPlacedFailedEvent: failedEvent => StatusCode(StatusCodes.Status500InternalServerError, failedEvent.Reason),
-            //    whenOrderPlacedSuccededEvent: succesEvent => Ok(succesEvent)
-            //    );
-
-            return await result.MatchAsync(
-                whenOrderPlacedFailedEvent: HandleFailure,
-                whenOrderPlacedSuccededEvent: HandleSucces
+            return result.Match<IActionResult>(
+                whenOrderPlacedFailedEvent: failedEvent => StatusCode(StatusCodes.Status500InternalServerError, failedEvent.Reason),
+                whenOrderPlacedSuccededEvent: succesEvent => Ok(succesEvent)
                 );
-         }
 
-        private Task<IActionResult> HandleFailure(OrderPlacedEvent.OrderPlacedFailedEvent failedEvent)
-        {
-            return Task.FromResult<IActionResult>(StatusCode(StatusCodes.Status500InternalServerError, failedEvent.Reason));
+            //return await result.MatchAsync(
+            //    whenOrderPlacedFailedEvent: HandleFailure,
+            //    whenOrderPlacedSuccededEvent: HandleSucces
+            //    );
         }
 
-        private async Task<IActionResult> HandleSucces(OrderPlacedEvent.OrderPlacedSuccededEvent succededEvent)
-        {
-            var w1 = TriggerBilling(succededEvent);
-            var w2 = TriggerShipping(succededEvent);
-            await Task.WhenAll(w1, w2);
-            return Ok();
-        }
+        //private Task<IActionResult> HandleFailure(OrderPlacedEvent.OrderPlacedFailedEvent failedEvent)
+        //{
+        //    return Task.FromResult<IActionResult>(StatusCode(StatusCodes.Status500InternalServerError, failedEvent.Reason));
+        //}
 
-        private async Task <Boolean> TriggerBilling(OrderPlacedEvent.OrderPlacedSuccededEvent succededEvent)
-        {
-            var httpRequestMessage = new HttpRequestMessage(
-            HttpMethod.Post, "")
-            {
-                Content = new StringContent(JsonConvert.SerializeObject(succededEvent), Encoding.UTF8, "application/json")
-            };
-            var client = httpClientFactory.CreateClient();
-            var response = await client.SendAsync(httpRequestMessage);
-            return true;
-        }
+        //private async Task<IActionResult> HandleSucces(OrderPlacedEvent.OrderPlacedSuccededEvent succededEvent)
+        //{
+        //    var w1 = TriggerBilling(succededEvent);
+        //    var w2 = TriggerShipping(succededEvent);
+        //    await Task.WhenAll(w1, w2);
+        //    return Ok();
+        //}
 
-        private async Task<Boolean> TriggerShipping(OrderPlacedEvent.OrderPlacedSuccededEvent succededEvent)
-        {
-            var httpRequestMessage = new HttpRequestMessage(
-            HttpMethod.Post, "")
-            {
-                Content = new StringContent(JsonConvert.SerializeObject(succededEvent), Encoding.UTF8, "application/json")
-            };
-            var client = httpClientFactory.CreateClient();
-            var response = await client.SendAsync(httpRequestMessage);
-            return true;
-        }
+        //private async Task <Boolean> TriggerBilling(OrderPlacedEvent.OrderPlacedSuccededEvent succededEvent)
+        //{
+        //    var httpRequestMessage = new HttpRequestMessage(
+        //    HttpMethod.Post, "")
+        //    {
+        //        Content = new StringContent(JsonConvert.SerializeObject(succededEvent), Encoding.UTF8, "application/json")
+        //    };
+        //    var client = httpClientFactory.CreateClient();
+        //    var response = await client.SendAsync(httpRequestMessage);
+        //    return true;
+        //}
+
+        //private async Task<Boolean> TriggerShipping(OrderPlacedEvent.OrderPlacedSuccededEvent succededEvent)
+        //{
+        //    var httpRequestMessage = new HttpRequestMessage(
+        //    HttpMethod.Post, "")
+        //    {
+        //        Content = new StringContent(JsonConvert.SerializeObject(succededEvent), Encoding.UTF8, "application/json")
+        //    };
+        //    var client = httpClientFactory.CreateClient();
+        //    var response = await client.SendAsync(httpRequestMessage);
+        //    return true;
+        //}
 
 
         private static UnvalidatedClientOrder MapInputClientOrderToUnvalidatedOrder(InputClientProduct inputClientProduct) =>
