@@ -38,6 +38,9 @@ namespace Proiect.Api
             services.AddTransient<IOrderHeaderRepository, OrderHeaderRepository>();
             services.AddTransient<IProductRepository,ProductRepository>();
             services.AddTransient<IClientRepository, ClientRepository>();
+            services.AddTransient<PlaceOrderWorkflow>();
+
+            services.AddHttpClient();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
