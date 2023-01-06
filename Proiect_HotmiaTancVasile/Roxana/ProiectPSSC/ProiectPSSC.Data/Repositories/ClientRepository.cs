@@ -30,10 +30,10 @@ namespace ProiectPSSC.Data.Repositories
         public TryAsync<List<ClientEmail>> TryGetExistingClients(IEnumerable<string> clientsToCheck) => async() =>
         {
             var clients = await _orderContext.Clients
-                                .Where(client => clientsToCheck.Contains(client.Email))
+                                .Where(client => clientsToCheck.Contains(client.ClientEmail))
                                 .AsNoTracking()
                                 .ToListAsync();
-            return clients.Select(client => new ClientEmail(client.Email))
+            return clients.Select(client => new ClientEmail(client.ClientEmail))
                             .ToList();
         };
     }

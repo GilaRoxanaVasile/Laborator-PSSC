@@ -47,7 +47,7 @@ namespace ProiectPSSC.Data.Repositories
             from p in _orderContext.Products
             join oLine2 in _orderContext.OrderLines on p.ProductId equals oLine2.ProductId
             join oLine in _orderContext.OrderLines on oh.OrderId equals oLine.OrderId
-            select new { oh.ClientEmail, oLine2.ProductCode, oLine2.Quantity, p.Price, p.ProductId })
+            select new { oh.ClientEmail, oLine2.ProductCode, oLine2.Quantity, p.Price, p.ProductId, oh.ClientId })
             .AsNoTracking()
             .ToListAsync())
             .Select(result => new CalculatedProductPrice(
@@ -57,13 +57,14 @@ namespace ProiectPSSC.Data.Repositories
                 price: new(result.Price),
                 totalPrice: new(result.Price * result.Quantity))
                 {
-                    ProductId = result.ProductId
+                    ClientId = result.ClientId
+                    //ProductId = result.ProductId
                 })
                 .ToList();
 
         public TryAsync<Unit> TrySaveProducts(OrderProducts.PlacedOrderProducts order) => async () =>
         {
-            var products = (await _orderContext.Products.ToListAsync()).ToLookup(product => product.Code);
+            var products = (await _orderContext.Products.ToListAsync()).ToLookup(product => product.ProductCode);
             var orderHeader = (await _orderContext.OrderHeaders.ToListAsync()).ToLookup(clientOrder => clientOrder.ClientEmail);
             var newOrderProducts = order.ProductList
                                     .Where(p => p.IsUpdated && p.OrderLineId == 0)

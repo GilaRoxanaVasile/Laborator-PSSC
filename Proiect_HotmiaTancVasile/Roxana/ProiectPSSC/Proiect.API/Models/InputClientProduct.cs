@@ -12,11 +12,11 @@ namespace ProiectPSSC.Api.Models
     {
         [Required]
         [RegularExpression(ClientEmail.Pattern)]
-        public string CMail { get; set; }
+        public string ClientMail { get; set; }
 
         [Required]
         [RegularExpression(ProductCode.Pattern)]
-        public string PCode { get; set; }
+        public string ProdCode { get; set; }
 
         [Required]
         [Range(1,1000)]

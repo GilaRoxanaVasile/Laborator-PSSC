@@ -29,7 +29,8 @@ namespace ProiectPSSC.Api.Controllers
             this.httpClientFactory = httpClientFactory;
             this.placeOrderWorkflow = placeOrderWorkflow;
         }
-        [HttpGet]
+
+        [HttpGet("getAllOrders")]
         public async Task<IActionResult> GetAllProducts([FromServices] IOrderHeaderRepository productRepository) =>
                 await productRepository.TryGetExistingClientOrders().Match(
                     Succ: GetAllProductsHandleSucces,
@@ -108,8 +109,8 @@ namespace ProiectPSSC.Api.Controllers
 
         private static UnvalidatedClientOrder MapInputClientOrderToUnvalidatedOrder(InputClientProduct inputClientProduct) =>
             new UnvalidatedClientOrder(
-                ClientEmail: inputClientProduct.CMail,
-                ProductCode: inputClientProduct.PCode,
+                ClientEmail: inputClientProduct.ClientMail,
+                ProductCode: inputClientProduct.ProdCode,
                 Quantity: inputClientProduct.Qunatity
                 );
     }

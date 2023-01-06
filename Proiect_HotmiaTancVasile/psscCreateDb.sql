@@ -1,6 +1,6 @@
  CREATE TABLE [dbo].[Product](
 	[ProductId] [int] IDENTITY(1,1) NOT NULL,
-	[Code] [varchar](7) NOT NULL,
+	[ProductCode] [varchar](7) NOT NULL,
 	[Stoc] [int] NOT NULL,
 	[Price] [decimal] NOT NULL,
  CONSTRAINT [PK_Product] PRIMARY KEY CLUSTERED 
@@ -12,7 +12,7 @@ GO
 
 CREATE TABLE [dbo].[Client](
 	[ClientId] [int] IDENTITY(1,1) NOT NULL,
-	[Email] [varchar](20) NOT NULL,
+	[ClientEmail] [varchar](20) NOT NULL,
 	[Name] [varchar](30) NOT NULL,
 	[PhoneNumber] [varchar](15) NOT NULL,
 	[CardDetails] [varchar](50), 
@@ -27,6 +27,7 @@ GO
 CREATE TABLE [dbo].[OrderHeader](
 	[OrderId] [int] IDENTITY(1,1) NOT NULL,
 	[ClientId] [int] NOT NULL,
+	[ClientEmail] [varchar](20) NOT NULL,
 	[TotalPrice] [decimal] NOT NULL,
 	[PaymentOption] [varchar](20) NOT NULL,
  CONSTRAINT [PK_OrderHeader] PRIMARY KEY CLUSTERED 
@@ -40,7 +41,7 @@ CREATE TABLE [dbo].[OrderLine](
 	[OrderLineId] [int] IDENTITY(1,1) NOT NULL,
 	[OrderId] [int] NOT NULL,
 	[ProductId] [int] NOT NULL,
-	[Code] [varchar](7) NOT NULL,
+	[ProductCode] [varchar](7) NOT NULL,
 	[Quantity] [int] NULL,
  CONSTRAINT [PK_OrderLine] PRIMARY KEY CLUSTERED 
 (

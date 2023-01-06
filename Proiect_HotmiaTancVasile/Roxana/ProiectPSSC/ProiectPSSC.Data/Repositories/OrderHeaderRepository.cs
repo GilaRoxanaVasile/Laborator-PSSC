@@ -28,27 +28,41 @@ namespace ProiectPSSC.Data.Repositories
         {
             dbContext = ctx;
         }
-
+        /*
         public TryAsync<List<CalculatedOrderTotalPrice>> TryGetExistingClientOrders() => async () => (await (
             from p in dbContext.Products
             from c in dbContext.Clients
             from ol in dbContext.OrderLines
             join oh in dbContext.OrderHeaders on c.ClientId equals oh.ClientId
-            select new { c.Email, p.Price, oh.TotalPrice, oh.ClientId })
+            select new { c.ClientEmail, p.Price, oh.TotalPrice, oh.ClientId })
                 .AsNoTracking()
                 .ToListAsync())
                 .Select(result => new CalculatedOrderTotalPrice(
-                    clientEmail: new(result.Email),
+                    clientEmail: new(result.ClientEmail),
                 totalPrice: new(result.TotalPrice))
         {
             ClientId = result.ClientId
         })
-        .ToList();
+        .ToList();*/
 
+        public TryAsync<List<CalculatedOrderTotalPrice>> TryGetExistingClientOrders() => async () => (await (
+            from c in dbContext.Clients
+            from ol in dbContext.OrderLines
+            join oh in dbContext.OrderHeaders on c.ClientId equals oh.ClientId
+            select new { oh.ClientEmail, oh.TotalPrice, oh.ClientId })
+            .AsNoTracking()
+            .ToListAsync())
+            .Select(result => new CalculatedOrderTotalPrice(
+                clientEmail: new(result.ClientEmail),
+            totalPrice: new(result.TotalPrice))
+            {
+                ClientId = result.ClientId
+            })
+            .ToList();
 
         public TryAsync<Unit> TrySaveOrders(OrderProducts.PlacedOrderProducts order) => async () =>
         {
-            var clients = (await dbContext.Clients.ToListAsync()).ToLookup(client => client.Email);
+            var clients = (await dbContext.Clients.ToListAsync()).ToLookup(client => client.ClientEmail);
             var newOrderProducts = order.ProductList
             .Where(p => p.IsUpdated && p.ProductId == 0)
             .Select(p => new OrderHeaderDto()
@@ -76,8 +90,43 @@ namespace ProiectPSSC.Data.Repositories
                 dbContext.Entry(entity).State = EntityState.Modified;
             }
 
-            await dbContext.SaveChangesAsync();
+           //await dbContext.SaveChangesAsync();
+            
+            try
+            {
+                // Attempt to save changes to the database
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex)
+            {
+                foreach (var entry in ex.Entries)
+                {
+                    if (entry.Entity is CalculatedProductPrice)
+                    {
+                        var proposedValues = entry.CurrentValues;
+                        var databaseValues = entry.GetDatabaseValues();
 
+                        foreach (var property in proposedValues.Properties)
+                        {
+                            var proposedValue = proposedValues[property];
+                            var databaseValue = databaseValues[property];
+
+                            // TODO: decide which value should be written to database
+                            // proposedValues[property] = <value to be saved>;
+                        }
+
+                        // Refresh original values to bypass next concurrency check
+                        entry.OriginalValues.SetValues(databaseValues);
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(
+                            "Don't know how to handle concurrency conflicts for "
+                            + entry.Metadata.Name);
+                    }
+                }
+            }
+            
             return unit;
         };
     }

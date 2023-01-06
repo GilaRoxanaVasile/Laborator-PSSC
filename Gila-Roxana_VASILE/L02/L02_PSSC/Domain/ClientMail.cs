@@ -9,8 +9,6 @@ namespace L02_PSSC.Domain
 {
     public record ClientMail
     {
-        //private static readonly Regex ValidPattrern = new("^\\S+@\\S+\\.\\S+$");
-        //private static readonly Regex ValidPattrern = new("^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$") 
 
         public string Value { get; }
 

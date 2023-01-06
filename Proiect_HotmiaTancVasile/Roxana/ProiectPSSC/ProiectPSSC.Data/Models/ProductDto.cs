@@ -9,7 +9,7 @@ namespace ProiectPSSC.Data.Models
     public class ProductDto
     {
         public int ProductId { get; set; }
-        public string Code { get; set; }
+        public string ProductCode { get; set; }
         public int Stoc { get; set; }
         public decimal Price { get; set; }
     }

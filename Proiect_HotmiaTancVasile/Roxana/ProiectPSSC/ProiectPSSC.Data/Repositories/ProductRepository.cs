@@ -14,7 +14,7 @@ namespace ProiectPSSC.Data.Repositories
     /*
      CREATE TABLE [dbo].[Product](
 	[ProductId] [int] IDENTITY(1,1) NOT NULL,
-	[Code] [varchar](7) NOT NULL,
+	[ProductCode] [varchar](7) NOT NULL,
 	[Stoc] [int] NOT NULL,
 	[Price] [decimal] NOT NULL,
      */
@@ -30,21 +30,21 @@ namespace ProiectPSSC.Data.Repositories
         public TryAsync<List<ProductCode>> TryGetExistingProducts(IEnumerable<string> productsToCheck) => async () =>
         {
             var products = await orderContext.Products
-                            .Where(product => productsToCheck.Contains(product.Code))
+                            .Where(product => productsToCheck.Contains(product.ProductCode))
                             .AsNoTracking()
                             .ToListAsync();
-            return products.Select(product => new ProductCode(product.Code))
+            return products.Select(product => new ProductCode(product.ProductCode))
                         .ToList();
         };
 
         public TryAsync<List<Products>> TryGetProductCatalog(IEnumerable<string> productCode) => async () =>
         {
             var catalog = await orderContext.Products
-                            .Where(product => productCode.Contains(product.Code))
+                            .Where(product => productCode.Contains(product.ProductCode))
                             .AsNoTracking()
                             .ToListAsync();
             return catalog.Select(
-                product =>  new Products(new ProductCode(product.Code),
+                product =>  new Products(new ProductCode(product.ProductCode),
                 new Quantity(product.Stoc), new ProductPrice(product.Price)))
                     .ToList();
         };
@@ -52,7 +52,7 @@ namespace ProiectPSSC.Data.Repositories
         public TryAsync<List<Quantity>> TryGetProductStoc(IEnumerable<string> productCode) => async () =>
         {
             var catalog = await orderContext.Products
-                            .Where(product => productCode.Contains(product.Code))
+                            .Where(product => productCode.Contains(product.ProductCode))
                             .AsNoTracking()
                             .ToListAsync();
             return catalog.Select(
@@ -63,7 +63,7 @@ namespace ProiectPSSC.Data.Repositories
         public TryAsync<List<ProductPrice>> TryGetProductPrices(IEnumerable<string> productCode) => async () =>
         {
             var catalog = await orderContext.Products
-                            .Where(product => productCode.Contains(product.Code))
+                            .Where(product => productCode.Contains(product.ProductCode))
                             .AsNoTracking()
                             .ToListAsync();
             return catalog.Select(
