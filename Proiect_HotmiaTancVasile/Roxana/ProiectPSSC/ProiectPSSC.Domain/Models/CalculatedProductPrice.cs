@@ -13,6 +13,7 @@ namespace ProiectPSSC.Domain.Models
         public int ProductId { get; set; } //ma gandesc
         public int ClientId { get; set; }
         public bool IsUpdated { get; set; }
+        public bool IsUpdatedLine { get; set; }
 
     }
 

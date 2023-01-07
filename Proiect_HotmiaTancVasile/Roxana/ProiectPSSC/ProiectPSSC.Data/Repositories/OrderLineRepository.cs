@@ -57,8 +57,8 @@ namespace ProiectPSSC.Data.Repositories
                 price: new(result.Price),
                 totalPrice: new(result.Price * result.Quantity))
                 {
-                    ClientId = result.ClientId
-                    //ProductId = result.ProductId
+                    ClientId = result.ClientId,
+                    ProductId = result.ProductId
                 })
                 .ToList();
 
@@ -67,20 +67,20 @@ namespace ProiectPSSC.Data.Repositories
             var products = (await _orderContext.Products.ToListAsync()).ToLookup(product => product.ProductCode);
             var orderHeader = (await _orderContext.OrderHeaders.ToListAsync()).ToLookup(clientOrder => clientOrder.ClientEmail);
             var newOrderProducts = order.ProductList
-                                    .Where(p => p.IsUpdated && p.OrderLineId == 0)
+                                    .Where(p => p.IsUpdatedLine && p.OrderLineId == 0)
                                     .Select(p => new OrderLineDto()
                                     {
                                          OrderId = orderHeader[p.code.Value].Single().OrderId,
-                                         ProductId = p.ProductId,
+                                         ProductId = products[p.code.Value].Single().ProductId,
                                          ProductCode = p.code.Value,
                                          Quantity = p.quantity.Value,
                                     });
-           var updatedOrderProducts = order.ProductList.Where(p => p.IsUpdated && p.ProductId > 0)
+           var updatedOrderProducts = order.ProductList.Where(p => p.IsUpdatedLine && p.OrderLineId > 0)
                                         .Select(p => new OrderLineDto()
                                         {
                                           OrderLineId = p.OrderLineId,
                                           OrderId = orderHeader[p.code.Value].Single().OrderId,
-                                          ProductId = p.ProductId,
+                                          ProductId = products[p.code.Value].Single().ProductId,
                                           ProductCode = p.code.Value,
                                           Quantity = p.quantity.Value,
                                         });

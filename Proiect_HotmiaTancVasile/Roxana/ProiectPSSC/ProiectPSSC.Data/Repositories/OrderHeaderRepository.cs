@@ -28,22 +28,6 @@ namespace ProiectPSSC.Data.Repositories
         {
             dbContext = ctx;
         }
-        /*
-        public TryAsync<List<CalculatedOrderTotalPrice>> TryGetExistingClientOrders() => async () => (await (
-            from p in dbContext.Products
-            from c in dbContext.Clients
-            from ol in dbContext.OrderLines
-            join oh in dbContext.OrderHeaders on c.ClientId equals oh.ClientId
-            select new { c.ClientEmail, p.Price, oh.TotalPrice, oh.ClientId })
-                .AsNoTracking()
-                .ToListAsync())
-                .Select(result => new CalculatedOrderTotalPrice(
-                    clientEmail: new(result.ClientEmail),
-                totalPrice: new(result.TotalPrice))
-        {
-            ClientId = result.ClientId
-        })
-        .ToList();*/
 
         public TryAsync<List<CalculatedOrderTotalPrice>> TryGetExistingClientOrders() => async () => (await (
             from c in dbContext.Clients
@@ -64,24 +48,23 @@ namespace ProiectPSSC.Data.Repositories
         {
             var clients = (await dbContext.Clients.ToListAsync()).ToLookup(client => client.ClientEmail);
             var newOrderProducts = order.ProductList
-            .Where(p => p.IsUpdated && p.ProductId == 0)
+            .Where(p => p.IsUpdated && p.OrderId == 0)
             .Select(p => new OrderHeaderDto()
             {
-                 // OrderId =
                   ClientId = clients[p.clientEmail.Value].Single().ClientId,
                   ClientEmail = p.clientEmail.Value,
                   TotalPrice = p.totalPrice.Price,
-                  PaymentOption = "ramburs", //tiganie aici, rezolva
+                  PaymentOption = "ramburs", //tiganie
             });
 
-            var updatedOrderProducts = order.ProductList.Where(p => p.IsUpdated && p.ProductId == 0)
+            var updatedOrderProducts = order.ProductList.Where(p => p.IsUpdated && p.OrderId > 0)
                 .Select(p => new OrderHeaderDto()
                 {
                     OrderId = p.OrderId,
                     ClientId = clients[p.clientEmail.Value].Single().ClientId,
                     ClientEmail = p.clientEmail.Value,
                     TotalPrice = p.totalPrice.Price,
-                    PaymentOption = "ramburs", //tiganie aici, rezolva
+                    PaymentOption = "ramburs", //tiganie
                 });
 
             dbContext.AddRange(newOrderProducts);
@@ -101,7 +84,7 @@ namespace ProiectPSSC.Data.Repositories
             {
                 foreach (var entry in ex.Entries)
                 {
-                    if (entry.Entity is CalculatedProductPrice)
+                    if (entry.Entity is OrderHeaderDto)
                     {
                         var proposedValues = entry.CurrentValues;
                         var databaseValues = entry.GetDatabaseValues();

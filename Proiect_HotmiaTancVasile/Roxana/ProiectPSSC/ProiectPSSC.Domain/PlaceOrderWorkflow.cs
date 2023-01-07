@@ -38,33 +38,38 @@ namespace ProiectPSSC.Domain
             UnvalidatedOrderProducts unvalidatedOrder = new UnvalidatedOrderProducts(command.InputClientProducts);
 
             var result = from products in productRepository.TryGetExistingProducts(unvalidatedOrder.ProductList.Select(product => product.ProductCode))
-                                                          .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product") as IOrderProducts)
+                                                   .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product") as IOrderProducts)
                          let checkProductExists = (Func<ProductCode, Option<ProductCode>>)(product => CheckProducttExists(products, product))
 
                          from productStoc in productRepository.TryGetProductStoc(unvalidatedOrder.ProductList.Select(product => product.ProductCode))
-                                                          .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product stoc") as IOrderProducts)
+                                                   .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product stoc") as IOrderProducts)
                          let checkStocAvailable = (Func<Quantity, Option<Quantity>>)(product => CheckStocAvailable(productStoc, product))
 
                          from productPrices in productRepository.TryGetProductPrices(unvalidatedOrder.ProductList.Select(product => product.ProductCode))
-                                                         .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product stoc") as IOrderProducts)
+                                                  .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product stoc") as IOrderProducts)
 
                          from productCatalog in productRepository.TryGetProductCatalog(unvalidatedOrder.ProductList.Select(product => product.ProductCode))
-                                                .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product stoc") as IOrderProducts)
+                                                  .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product stoc") as IOrderProducts)
 
                          from allOrderProducts in orderLineRepository.TryGetExistingOrderProducts()
                                                  .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la produs") as IOrderProducts)
 
                          from existingClients in clientRepository.TryGetExistingClients(unvalidatedOrder.ProductList.Select(client => client.ClientEmail))
-                                                            .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la client") as IOrderProducts)
+                                                 .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la client") as IOrderProducts)
                          let checkClientExists = (Func<ClientEmail, Option<ClientEmail>>)(client => CheckClientExists(existingClients, client))
 
                          from clients in orderHeaderRepository.TryGetExistingClientOrders()
-                                    .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la client") as IOrderProducts)
+                                                 .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la client") as IOrderProducts)
 
-                         from placedOrder in ExecuteWorkflowAsync(unvalidatedOrder, allOrderProducts, clients, productCatalog, checkClientExists, checkStocAvailable, checkProductExists).ToAsync()
+                         from placedOrder in ExecuteWorkflowAsync(unvalidatedOrder, allOrderProducts, clients, productCatalog, checkClientExists, checkStocAvailable, checkProductExists)
+                                                 .ToAsync()
 
                          from _ in orderHeaderRepository.TrySaveOrders(placedOrder)
-                                 .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product") as IOrderProducts)
+                                                 .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la order header") as IOrderProducts)
+
+                         from __ in orderLineRepository.TrySaveProducts(placedOrder)
+                                                .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la order line") as IOrderProducts)
+                         
                          select placedOrder;
 
             return await result.Match(
