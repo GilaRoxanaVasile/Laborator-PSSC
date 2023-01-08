@@ -45,7 +45,7 @@ namespace Proiect.Api
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Example.Api", Version = "v1" });
+                c.SwaggerDoc("v1001", new OpenApiInfo { Title = "ProiectPSSC.Api", Version = "v1001" });
             });
 
         }
@@ -57,7 +57,7 @@ namespace Proiect.Api
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Example.Api v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1001/swagger.json", "ProiectPSSC.Api v1001"));
             }
 
             app.UseHttpsRedirection();

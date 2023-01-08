@@ -46,10 +46,10 @@ namespace ProiectPSSC.Domain
                          let checkStocAvailable = (Func<Quantity, Option<Quantity>>)(product => CheckStocAvailable(productStoc, product))
 
                          from productPrices in productRepository.TryGetProductPrices(unvalidatedOrder.ProductList.Select(product => product.ProductCode))
-                                                  .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product stoc") as IOrderProducts)
+                                                  .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product price") as IOrderProducts)
 
                          from productCatalog in productRepository.TryGetProductCatalog(unvalidatedOrder.ProductList.Select(product => product.ProductCode))
-                                                  .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product stoc") as IOrderProducts)
+                                                  .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la product catalog") as IOrderProducts)
 
                          from allOrderProducts in orderLineRepository.TryGetExistingOrderProducts()
                                                  .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la produs") as IOrderProducts)
@@ -59,7 +59,7 @@ namespace ProiectPSSC.Domain
                          let checkClientExists = (Func<ClientEmail, Option<ClientEmail>>)(client => CheckClientExists(existingClients, client))
 
                          from clients in orderHeaderRepository.TryGetExistingClientOrders()
-                                                 .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la client") as IOrderProducts)
+                                                 .ToEither(ex => new InvalidOrderProducts(unvalidatedOrder.ProductList, "eroare la client orders") as IOrderProducts)
 
                          from placedOrder in ExecuteWorkflowAsync(unvalidatedOrder, allOrderProducts, clients, productCatalog, checkClientExists, checkStocAvailable, checkProductExists)
                                                  .ToAsync()
@@ -74,7 +74,7 @@ namespace ProiectPSSC.Domain
 
             return await result.Match(
                 Left: order => GenerateFailedEvent(order) as IOrderPlacedEvent,
-                Right: placedOrder => new OrderPlacedSuccededEvent(placedOrder.Csv, placedOrder.PublishedDate)
+                Right: placedOrder => new OrderPlacedSuccededEvent(placedOrder.Price, placedOrder.Csv, placedOrder.PublishedDate)
                 );
 
          }

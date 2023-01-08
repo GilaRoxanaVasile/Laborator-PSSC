@@ -13,11 +13,13 @@ namespace ProiectPSSC.Domain.Models
         public interface IOrderPlacedEvent { }
         public record OrderPlacedSuccededEvent:IOrderPlacedEvent
         {
-            internal OrderPlacedSuccededEvent(string csv, DateTime publishedDate)
+            internal OrderPlacedSuccededEvent(ProductPrice price, string csv, DateTime publishedDate)
             {
+                Price = price;
                 Csv = csv;
                 PublishedDate = publishedDate;
             }
+            public ProductPrice Price { get; }
             public string Csv { get; }
             public DateTime PublishedDate { get; }
         }

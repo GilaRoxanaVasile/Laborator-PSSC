@@ -47,7 +47,7 @@ namespace ProiectPSSC.Data.Repositories
             from p in _orderContext.Products
             join oLine2 in _orderContext.OrderLines on p.ProductId equals oLine2.ProductId
             join oLine in _orderContext.OrderLines on oh.OrderId equals oLine.OrderId
-            select new { oh.ClientEmail, oLine2.ProductCode, oLine2.Quantity, p.Price, p.ProductId, oh.ClientId })
+            select new { oh.ClientEmail, oLine2.ProductCode, oLine2.Quantity, p.Price, p.ProductId, oh.OrderId })
             .AsNoTracking()
             .ToListAsync())
             .Select(result => new CalculatedProductPrice(
@@ -57,8 +57,8 @@ namespace ProiectPSSC.Data.Repositories
                 price: new(result.Price),
                 totalPrice: new(result.Price * result.Quantity))
                 {
-                    ClientId = result.ClientId,
-                    ProductId = result.ProductId
+                    OrderId = result.OrderId,
+                    //ProductId = result.ProductId
                 })
                 .ToList();
 
@@ -73,7 +73,7 @@ namespace ProiectPSSC.Data.Repositories
                                          OrderId = orderHeader[p.code.Value].Single().OrderId,
                                          ProductId = products[p.code.Value].Single().ProductId,
                                          ProductCode = p.code.Value,
-                                         Quantity = p.quantity.Value,
+                                         Quantity = p.quantity.Value, 
                                     });
            var updatedOrderProducts = order.ProductList.Where(p => p.IsUpdatedLine && p.OrderLineId > 0)
                                         .Select(p => new OrderLineDto()

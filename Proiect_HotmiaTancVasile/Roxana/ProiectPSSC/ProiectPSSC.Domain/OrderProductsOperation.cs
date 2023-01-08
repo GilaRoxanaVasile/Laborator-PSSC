@@ -109,8 +109,8 @@ namespace ProiectPSSC.Domain
 
         private static CalculatedOrderProducts MergeProducts(IEnumerable<CalculatedProductPrice> newList, IEnumerable<CalculatedProductPrice> existingList)
         {
-            var updatedAndNewProducts = newList.Select(product => product with { ClientId = existingList.FirstOrDefault(g => g.code == product.code)?.ClientId ?? 0, IsUpdated = true });
-            var oldProducts = existingList.Where(product => !newList.Any(g => g.code == product.code));
+            var updatedAndNewProducts = newList.Select(product => product with { ClientId = existingList.FirstOrDefault(g => g.clientEmail == product.clientEmail)?.ClientId ?? 0, IsUpdated = true });
+            var oldProducts = existingList.Where(product => !newList.Any(g => g.clientEmail == product.clientEmail));
             var allProducts = updatedAndNewProducts.Union(oldProducts)
                                                .ToList()
                                                .AsReadOnly();
