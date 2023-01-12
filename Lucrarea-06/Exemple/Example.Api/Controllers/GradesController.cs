@@ -93,7 +93,7 @@ namespace Example.Api.Controllers
             {
                 Content = new StringContent(JsonConvert.SerializeObject(successEvent), Encoding.UTF8, "application/json")
             };
-            var client = _httpClientFactory.CreateClient();
+           var client = _httpClientFactory.CreateClient();
             var response = await client.SendAsync(httpRequestMessage);
             return true;
         }
